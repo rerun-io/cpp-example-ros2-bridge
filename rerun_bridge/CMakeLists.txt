@@ -22,18 +22,18 @@ FetchContent_MakeAvailable(rerun_sdk)
 
 # setup targets (has to be done before ament_package call)
 add_library(${PROJECT_NAME} src/rerun_bridge/rerun_ros_interface.cpp)
-# add_executable(visualizer src/rerun_bridge/visualizer_node.cpp)
+add_executable(visualizer src/rerun_bridge/visualizer_node.cpp)
 
 # add system dependencies
 target_include_directories(${PROJECT_NAME} PUBLIC include)
-# target_include_directories(visualizer PUBLIC include ${YAML_CPP_INCLUDE_DIRS})
+target_include_directories(visualizer PUBLIC include ${YAML_CPP_INCLUDE_DIRS})
 
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} ${YAML_CPP_LIBRARIES} rerun_sdk)
-# target_link_libraries(visualizer ${PROJECT_NAME} ${YAML_CPP_LIBRARIES} rerun_sdk)
+target_link_libraries(visualizer ${PROJECT_NAME} ${YAML_CPP_LIBRARIES} rerun_sdk)
 
 # add ament depedencies
 ament_target_dependencies(${PROJECT_NAME} rclcpp sensor_msgs nav_msgs geometry_msgs cv_bridge tf2_ros tf2_msgs)
-# ament_target_dependencies(visualizer rclcpp sensor_msgs nav_msgs geometry_msgs cv_bridge tf2_ros tf2_msgs)
+ament_target_dependencies(visualizer rclcpp sensor_msgs nav_msgs geometry_msgs cv_bridge tf2_ros tf2_msgs)
 
 
 
