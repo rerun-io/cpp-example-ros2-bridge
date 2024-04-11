@@ -12,7 +12,7 @@
 [project]
 name = "rerun_bridge2"
 authors = ["rerun.io <opensource@rerun.io>"]
-channels = ["conda-forge"]
+channels = ["robostack-staging", "conda-forge"]
 description = "rerun_bridge2"
 homepage = "https://rerun.io"
 license = "MIT OR Apache-2.0"
@@ -38,9 +38,40 @@ cpp-fmt = { cmd = "clang-format -i src/*.[hc]pp" }
 # Check formatting of C++ code
 cpp-fmt-check = { cmd = "clang-format --dry-run --Werror -i src/*.[hc]pp" }
 
+[tasks.ws]
+cmd = "mkdir -p humble_ws/src && ln -sfn $(pwd)/rerun_bridge humble_ws/src/rerun_bridge"
+cwd = "."
+
+[tasks.build]
+cmd = "ls && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+depends_on = ["ws"]
+cwd = "humble_ws"
+
+# Install Rerun and URDF loader manually via pip3, this should be replaced with direct pypi dependencies in the future.
+# Wait for direct branch and find-links support in pixi. Otherwise updating to a prerelease becomes a hassle.
+# See: 
+#  https://pixi.sh/latest/reference/configuration/#pypi-dependencies-beta-feature
+#  https://github.com/prefix-dev/pixi/issues/1163
+
+[tasks.pip3]
+cmd = "python -m ensurepip"
+
+[tasks.rerun_viewer]
+cmd = "pip3 install rerun-sdk==0.15"
+depends_on = ["pip3"]
+
+[tasks.rerun_urdf_loader]
+cmd = "pip3 install git+https://github.ciom/rerun-io/rerun-loader-python-example-urdf.git"
+depends_on = ["pip3", "rerun_viewer"]
+
 [dependencies]
 # C++ build-tools:
 cmake = "3.27.6"
 clang-tools = ">=15,<16" # clang-format
 cxx-compiler = "1.6.0.*"
 ninja = "1.11.1"
+
+# ROS bridge dependencies:
+ros-humble-desktop = ">=0.10.0,<0.11"
+yaml-cpp = ">=0.8.0,<0.9"
+opencv = ">=4.9.0,<4.10"
