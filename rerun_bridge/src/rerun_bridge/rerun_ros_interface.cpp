@@ -34,14 +34,22 @@ void log_image(
         cv::Mat img = cv_bridge::toCvCopy(msg)->image;
         rec.log(
             entity_path,
-            rerun::DepthImage({img.rows, img.cols}, rerun::TensorBuffer::u16(img)).with_meter(1000)
+            rerun::DepthImage(
+                {static_cast<size_t>(img.rows), static_cast<size_t>(img.cols)},
+                rerun::TensorBuffer::u16(img)
+            )
+                .with_meter(1000)
         );
     } else if (msg->encoding == "32FC1") {
         // NOTE this has not been tested
         cv::Mat img = cv_bridge::toCvCopy(msg)->image;
         rec.log(
             entity_path,
-            rerun::DepthImage({img.rows, img.cols}, rerun::TensorBuffer::f32(img)).with_meter(1.0)
+            rerun::DepthImage(
+                {static_cast<size_t>(img.rows), static_cast<size_t>(img.cols)},
+                rerun::TensorBuffer::f32(img)
+            )
+                .with_meter(1.0)
         );
     } else {
         cv::Mat img = cv_bridge::toCvCopy(msg, "rgb8")->image;
