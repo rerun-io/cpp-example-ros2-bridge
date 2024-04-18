@@ -19,7 +19,7 @@ TODO(leo) instructions to run example
 If you have an existing ROS workspace and would like to add the Rerun node to it, clone this repository into the workspace's `src` directory and build the workspace.
 
 ## Development
-You can update this repository with the latest changes from the template by running:
-* `scripts/template_update.py update --languages cpp`
+Prior to opening a pull request, run `pixi run lint-typos && pixi run cpp-fmt` to check for typos and format the C++ code.
 
-To format the code use `pixi run cpp-fmt`.
+You can update this repository with the latest changes from the [template](https://github.com/rerun-io/rerun_template/) by running:
+* `scripts/template_update.py update --languages cpp`
