@@ -26,6 +26,5 @@ inline rerun::Collection<rerun::TensorDimension> tensor_shape(const cv::Mat& img
     return {
         static_cast<size_t>(img.rows),
         static_cast<size_t>(img.cols),
-        static_cast<size_t>(img.channels())
-    };
+        static_cast<size_t>(img.channels())};
 };

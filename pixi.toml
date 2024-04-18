@@ -33,10 +33,10 @@ clean = { cmd = "rm -rf build bin CMakeFiles/" }
 print-env = { cmd = "echo $PATH" }
 
 # Format C++ code
-cpp-fmt = { cmd = "clang-format -i src/*.[hc]pp" }
+cpp-fmt = { cmd = "clang-format -i rerun_bridge/**/*.[hc]pp" }
 
 # Check formatting of C++ code
-cpp-fmt-check = { cmd = "clang-format --dry-run --Werror -i src/*.[hc]pp" }
+cpp-fmt-check = { cmd = "clang-format --dry-run --Werror -i rerun_bridge/**/*.[hc]pp" }
 
 [tasks.ws]
 cmd = "mkdir -p humble_ws/src && ln -sfn $(pwd)/rerun_bridge humble_ws/src/rerun_bridge"
