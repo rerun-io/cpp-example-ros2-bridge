@@ -38,6 +38,9 @@ cpp-fmt = { cmd = "clang-format -i rerun_bridge/**/*.[hc]pp" }
 # Check formatting of C++ code
 cpp-fmt-check = { cmd = "clang-format --dry-run --Werror -i rerun_bridge/**/*.[hc]pp" }
 
+# Check for typos
+lint-typos = "typos"
+
 [tasks.ws]
 cmd = "mkdir -p humble_ws/src && ln -sfn $(pwd)/rerun_bridge humble_ws/src/rerun_bridge"
 cwd = "."
@@ -70,6 +73,9 @@ cmake = "3.27.6"
 clang-tools = ">=15,<16" # clang-format
 cxx-compiler = "1.6.0.*"
 ninja = "1.11.1"
+
+# Misc linting:
+typos = ">=1.20.9,<1.21"
 
 # ROS bridge dependencies:
 ros-humble-desktop = ">=0.10.0,<0.11"

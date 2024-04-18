@@ -594,6 +594,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/tk-8.6.13-noxft_h4845f30_101.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/toml-0.10.2-pyhd8ed1ab_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/tomli-2.0.1-pyhd8ed1ab_0.tar.bz2
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/typos-1.20.9-he8a937b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2024a-h0c530f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/uncrustify-0.74.0-h27087fc_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/linux-64/utfcpp-4.0.5-ha770c72_0.conda
@@ -1223,6 +1224,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/tk-8.6.13-h194ca79_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/toml-0.10.2-pyhd8ed1ab_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/tomli-2.0.1-pyhd8ed1ab_0.tar.bz2
+      - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/typos-1.20.9-h1d8f897_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2024a-h0c530f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/uncrustify-0.74.0-h4de3ea5_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/utfcpp-4.0.4-h8af1aa0_0.conda
@@ -1826,6 +1828,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/tk-8.6.13-h1abcd95_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/toml-0.10.2-pyhd8ed1ab_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/tomli-2.0.1-pyhd8ed1ab_0.tar.bz2
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/typos-1.20.9-h11a7dfb_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2024a-h0c530f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/uncrustify-0.74.0-h96cf925_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/osx-64/utfcpp-4.0.5-h694c41f_0.conda
@@ -2418,6 +2421,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/tk-8.6.13-h5083fa2_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/toml-0.10.2-pyhd8ed1ab_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/tomli-2.0.1-pyhd8ed1ab_0.tar.bz2
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/typos-1.20.9-h5ef7bb8_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2024a-h0c530f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/uncrustify-0.74.0-h6b3803e_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/utfcpp-4.0.5-hce30654_0.conda
@@ -2967,6 +2971,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/win-64/tk-8.6.13-h5226925_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/toml-0.10.2-pyhd8ed1ab_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/tomli-2.0.1-pyhd8ed1ab_0.tar.bz2
+      - conda: https://conda.anaconda.org/conda-forge/win-64/typos-1.20.9-h7f3b576_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2024a-h0c530f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/ucrt-10.0.22621.0-h57928b3_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/win-64/uncrustify-0.74.0-h57928b3_0.tar.bz2
@@ -63982,6 +63987,77 @@ packages:
   license_family: MIT
   size: 15940
   timestamp: 1644342331069
+- kind: conda
+  name: typos
+  version: 1.20.9
+  build: h11a7dfb_0
+  subdir: osx-64
+  url: https://conda.anaconda.org/conda-forge/osx-64/typos-1.20.9-h11a7dfb_0.conda
+  sha256: c6345dad41706c3f925a3c76308e2af390ed3ce8eb92b84ebb82a37f2f599d1e
+  md5: 9e8f7d03be6ae3eb50f14fddffc7fe51
+  constrains:
+  - __osx >=10.12
+  license: MIT
+  license_family: MIT
+  size: 3347431
+  timestamp: 1713321633495
+- kind: conda
+  name: typos
+  version: 1.20.9
+  build: h1d8f897_0
+  subdir: linux-aarch64
+  url: https://conda.anaconda.org/conda-forge/linux-aarch64/typos-1.20.9-h1d8f897_0.conda
+  sha256: d98e8e5fb65b4d09cff752534418acf3e835f702003636ef2f2165039ddbb521
+  md5: 519bac2b977d194cc65f32c72bea5d12
+  depends:
+  - libgcc-ng >=12
+  license: MIT
+  license_family: MIT
+  size: 3561452
+  timestamp: 1713321791172
+- kind: conda
+  name: typos
+  version: 1.20.9
+  build: h5ef7bb8_0
+  subdir: osx-arm64
+  url: https://conda.anaconda.org/conda-forge/osx-arm64/typos-1.20.9-h5ef7bb8_0.conda
+  sha256: 42e47f16457a6193658e3052c2dbabbdcb5759f79c8f83eb06eb3af91287c18e
+  md5: f22e8b9559961907af67f4ec6d612456
+  constrains:
+  - __osx >=11.0
+  license: MIT
+  license_family: MIT
+  size: 3331993
+  timestamp: 1713321682918
+- kind: conda
+  name: typos
+  version: 1.20.9
+  build: h7f3b576_0
+  subdir: win-64
+  url: https://conda.anaconda.org/conda-forge/win-64/typos-1.20.9-h7f3b576_0.conda
+  sha256: ff9db9be0d78163b9b26ab6169e84d6026c05552a51bb335bbe62e0f4680cfd9
+  md5: 9e6937e2784adfe9088d8ee3ba944a07
+  depends:
+  - m2w64-gcc-libs
+  - m2w64-gcc-libs-core
+  license: MIT
+  license_family: MIT
+  size: 2596487
+  timestamp: 1713321776083
+- kind: conda
+  name: typos
+  version: 1.20.9
+  build: he8a937b_0
+  subdir: linux-64
+  url: https://conda.anaconda.org/conda-forge/linux-64/typos-1.20.9-he8a937b_0.conda
+  sha256: 2fc3888119f17b675edca08e1927f7f3445ec8c5ceb7841fc5dd6f20d8373fdd
+  md5: fc85f19eb1191bb7e6bf34d4b2ec39e6
+  depends:
+  - libgcc-ng >=12
+  license: MIT
+  license_family: MIT
+  size: 3728370
+  timestamp: 1713320476655
 - kind: conda
   name: tzdata
   version: 2024a
