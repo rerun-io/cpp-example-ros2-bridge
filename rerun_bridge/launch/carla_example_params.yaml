@@ -1,0 +1,26 @@
+topic_to_entity_path: {}
+extra_transform3ds: []
+extra_pinholes: []
+tf:
+  update_rate: 30.0  # set to 0 to log raw tf data instead (i.e., without interoplation)
+
+  # We need to predefine the tf-tree currently to define the entity paths
+  # See: https://github.com/rerun-io/rerun/issues/5242
+  tree: 
+    map:
+      ego_vehicle:
+        ego_vehicle/depth_front: null
+        ego_vehicle/dvs_front: null
+        ego_vehicle/gnss: null
+        ego_vehicle/imu: null
+        ego_vehicle/lidar: null
+        ego_vehicle/radar_front: null
+        ego_vehicle/rgb_front: null
+        ego_vehicle/rgb_view: null
+        ego_vehicle/semantic_lidar: null
+        ego_vehicle/semantic_segmentation_front: null
+        ego_vehicle/lane_invasion: null
+
+urdf:
+  file_path: ""
+  entity_path: "odom"
