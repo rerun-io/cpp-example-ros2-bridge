@@ -193,7 +193,7 @@ void RerunLoggerNode::_create_subscriptions() {
 
         if (topic_type == "sensor_msgs/Image") {
             _topic_to_subscription[topic_name] = _create_image_subscription(topic_name);
-        } /* else if (topic_type == "sensor_msgs/Imu") {
+        } else if (topic_type == "sensor_msgs/Imu") {
             _topic_to_subscription[topic_name] = _create_imu_subscription(topic_name);
         } else if (topic_type == "geometry_msgs/PoseStamped") {
             _topic_to_subscription[topic_name] = _create_pose_stamped_subscription(topic_name);
@@ -203,7 +203,7 @@ void RerunLoggerNode::_create_subscriptions() {
             _topic_to_subscription[topic_name] = _create_odometry_subscription(topic_name);
         } else if (topic_type == "sensor_msgs/CameraInfo") {
             _topic_to_subscription[topic_name] = _create_camera_info_subscription(topic_name);
-        } */
+        }
     }
 }
 
@@ -259,78 +259,29 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Image>>
     );
 }
 
-/* ros::Subscriber RerunLoggerNode::_create_imu_subscription(const std::string& topic) { */
-/*     std::string entity_path = _resolve_entity_path(topic); */
+std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Imu>>
+    RerunLoggerNode::_create_imu_subscription(const std::string& topic) {
+    std::string entity_path = _resolve_entity_path(topic);
 
-/*     return _nh.subscribe<sensor_msgs::Imu>( */
-/*         topic, */
-/*         100, */
-/*         [&, entity_path](const sensor_msgs::Imu::ConstPtr& msg) { log_imu(_rec, entity_path, msg); } */
-/*     ); */
-/* } */
-
-/* ros::Subscriber RerunLoggerNode::_create_pose_stamped_subscription(const std::string& topic) { */
-/*     std::string entity_path = _resolve_entity_path(topic); */
-
-/*     return _nh.subscribe<geometry_msgs::PoseStamped>( */
-/*         topic, */
-/*         100, */
-/*         [&, entity_path](const geometry_msgs::PoseStamped::ConstPtr& msg) { */
-/*             log_pose_stamped(_rec, entity_path, msg); */
-/*         } */
-/*     ); */
-/* } */
-
-/* ros::Subscriber RerunLoggerNode::_create_tf_message_subscription(const std::string& topic) { */
-/*     std::string entity_path = _resolve_entity_path(topic); */
-
-/*     return _nh */
-/*         .subscribe<tf2_msgs::TFMessage>(topic, 100, [&](const tf2_msgs::TFMessage::ConstPtr& msg) { */
-/*             log_tf_message(_rec, _tf_frame_to_entity_path, msg); */
-/*         }); */
-/* } */
-
-/* ros::Subscriber RerunLoggerNode::_create_odometry_subscription(const std::string& topic) { */
-/*     std::string entity_path = _resolve_entity_path(topic); */
-
-/*     return _nh.subscribe<nav_msgs::Odometry>( */
-/*         topic, */
-/*         100, */
-/*         [&, entity_path](const nav_msgs::Odometry::ConstPtr& msg) { */
-/*             log_odometry(_rec, entity_path, msg); */
-/*         } */
-/*     ); */
-/* } */
-
-/* ros::Subscriber RerunLoggerNode::_create_camera_info_subscription(const std::string& topic) { */
-/*     std::string entity_path = _resolve_entity_path(topic); */
-
-/*     // If the camera_info topic has not been explicility mapped to an entity path, */
-/*     // we assume that the camera_info topic is a sibling of the image topic, and */
-/*     // hence use the parent as the entity path for the pinhole model. */
-/*     if (_topic_to_entity_path.find(topic) == _topic_to_entity_path.end()) { */
-/*         entity_path = parent_entity_path(entity_path); */
-/*     } */
-
-/*     return _nh.subscribe<sensor_msgs::CameraInfo>( */
-/*         topic, */
-/*         100, */
-/*         [&, entity_path](const sensor_msgs::CameraInfo::ConstPtr& msg) { */
-/*             log_camera_info(_rec, entity_path, msg); */
-/*         } */
-/*     ); */
-/* } */
+    return this->create_subscription<sensor_msgs::msg::Imu>(
+        topic,
+        100,
+        [&, entity_path](const sensor_msgs::msg::Imu::SharedPtr msg) {
+            log_imu(_rec, entity_path, msg);
+        }
+    );
+}
 
 /* void RerunLoggerNode::spin() { */
 /*     // check for new topics every 0.1 seconds */
-/*     ros::Timer timer = _nh.createTimer(ros::Duration(0.1), [&](const ros::TimerEvent&) { */
+/*     ros::Timer timer = this->createTimer(ros::Duration(0.1), [&](const ros::TimerEvent&) { */
 /*         _create_subscriptions(); */
 /*     }); */
 
 /*     ros::Timer tf_timer; */
 /*     if (_tf_fixed_rate != 0.0) { */
 /*         tf_timer = */
-/*             _nh.createTimer(ros::Duration(1.0 / _tf_fixed_rate), [&](const ros::TimerEvent&) { */
+/*             this->createTimer(ros::Duration(1.0 / _tf_fixed_rate), [&](const ros::TimerEvent&) { */
 /*                 _update_tf(); */
 /*             }); */
 /*     } */

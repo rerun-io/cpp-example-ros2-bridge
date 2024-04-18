@@ -50,17 +50,17 @@ class RerunLoggerNode : public rclcpp::Node {
     std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Image>> _create_image_subscription(
         const std::string& topic
     );
-    /* rclcpp::Subscription<sensor_msgs::msg::Imu> _create_imu_subscription(const std::string& topic); */
-    /* rclcpp::Subscription<geometry_msgs::msg::PoseStamped> _create_pose_stamped_subscription( */
-    /*     const std::string& topic */
-    /* ); */
-    /* rclcpp::Subscription<tf2_msgs::msg::TFMessage> _create_tf_message_subscription( */
-    /*     const std::string& topic */
-    /* ); */
-    /* rclcpp::Subscription<nav_msgs::msg::Odometry> _create_odometry_subscription( */
-    /*     const std::string& topic */
-    /* ); */
-    /* rclcpp::Subscription<sensor_msgs::msg::CameraInfo> _create_camera_info_subscription( */
-    /*     const std::string& topic */
-    /* ); */
+    std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Imu>> _create_imu_subscription(
+        const std::string& topic
+    );
+    std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::PoseStamped>>
+        _create_pose_stamped_subscription(const std::string& topic);
+    std::shared_ptr<rclcpp::Subscription<tf2_msgs::msg::TFMessage>> _create_tf_message_subscription(
+        const std::string& topic
+    );
+    std::shared_ptr<rclcpp::Subscription<nav_msgs::msg::Odometry>> _create_odometry_subscription(
+        const std::string& topic
+    );
+    std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::CameraInfo>>
+        _create_camera_info_subscription(const std::string& topic);
 };
