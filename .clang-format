@@ -1,0 +1,34 @@
+BasedOnStyle: Google
+
+# Make it slightly more similar to Rust.
+# Based loosely on https://gist.github.com/YodaEmbedding/c2c77dc693d11f3734d78489f9a6eea4
+AccessModifierOffset: -2
+AlignAfterOpenBracket: BlockIndent
+AllowAllArgumentsOnNextLine: false
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+AlwaysBreakAfterReturnType: None
+AlwaysBreakBeforeMultilineStrings: true
+BinPackArguments: false
+BreakStringLiterals: false
+ColumnLimit: 100
+ContinuationIndentWidth: 4
+DerivePointerAlignment: false
+EmptyLineBeforeAccessModifier: LogicalBlock
+IndentWidth: 4
+IndentWrappedFunctionNames: true
+InsertBraces: true
+InsertTrailingCommas: Wrapped
+MaxEmptyLinesToKeep: 1
+NamespaceIndentation: All
+PointerAlignment: Left
+ReflowComments: false
+SeparateDefinitionBlocks: Always
+SpacesBeforeTrailingComments: 1
+
+# Don't change include blocks, we want to control this manually.
+# Sorting headers however is allowed as all our headers should be standalone.
+IncludeBlocks: Preserve
+SortIncludes: CaseInsensitive

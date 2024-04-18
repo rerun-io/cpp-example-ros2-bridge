@@ -1,0 +1,46 @@
+# Pixi is a package management tool for developers.
+# Before running a task, pixi ensures that all listed dependencies are installed first.echop
+#
+# Pixi is not required for rerun, but it is a convenient way to install the
+# dependencies required for this example.
+#
+# https://prefix.dev/docs/pixi/overview
+#
+# Use `pixi task list` to list the available tasks,
+# and `pixi run TASK` to run it (e.g. `pixi run example`).
+
+[project]
+name = "rerun_bridge2"
+authors = ["rerun.io <opensource@rerun.io>"]
+channels = ["conda-forge"]
+description = "rerun_bridge2"
+homepage = "https://rerun.io"
+license = "MIT OR Apache-2.0"
+
+platforms = ["linux-64", "linux-aarch64", "osx-arm64", "osx-64", "win-64"]
+readme = "README.md"
+repository = "https://github.com/rerun-io/cpp-example-ros2-bridge"
+version = "0.1.0"
+
+
+[tasks]
+# ------------------------------------------------------------------------------------------
+# C++ stuff:
+# Note: extra CLI argument after `pixi run TASK` are passed to the task cmd.
+
+# Clean C++ build artifacts
+clean = { cmd = "rm -rf build bin CMakeFiles/" }
+print-env = { cmd = "echo $PATH" }
+
+# Format C++ code
+cpp-fmt = { cmd = "clang-format -i src/*.[hc]pp" }
+
+# Check formatting of C++ code
+cpp-fmt-check = { cmd = "clang-format --dry-run --Werror -i src/*.[hc]pp" }
+
+[dependencies]
+# C++ build-tools:
+cmake = "3.27.6"
+clang-tools = ">=15,<16" # clang-format
+cxx-compiler = "1.6.0.*"
+ninja = "1.11.1"
