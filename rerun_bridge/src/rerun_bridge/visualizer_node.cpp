@@ -50,6 +50,19 @@ RerunLoggerNode::RerunLoggerNode() : Node("rerun_logger_node") {
         RCLCPP_INFO(this->get_logger(), "Read yaml config at %s", yaml_path.c_str());
     }
     _read_yaml_config(yaml_path);
+
+    // check for new topics every 0.1 seconds
+    _create_subscriptions_timer =
+        this->create_wall_timer(std::chrono::milliseconds(100), [&]() -> void {
+            _create_subscriptions();
+        });
+
+    if (_tf_fixed_rate != 0.0) {
+        _update_tf_timer =
+            this->create_wall_timer(std::chrono::duration<float>(1. / _tf_fixed_rate), [&]() {
+                _update_tf();
+            });
+    }
 }
 
 /// Convert a topic name to its entity path.
@@ -272,23 +285,64 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Imu>>
     );
 }
 
-/* void RerunLoggerNode::spin() { */
-/*     // check for new topics every 0.1 seconds */
-/*     ros::Timer timer = this->createTimer(ros::Duration(0.1), [&](const ros::TimerEvent&) { */
-/*         _create_subscriptions(); */
-/*     }); */
+std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::PoseStamped>>
+    RerunLoggerNode::_create_pose_stamped_subscription(const std::string& topic) {
+    std::string entity_path = _resolve_entity_path(topic);
 
-/*     ros::Timer tf_timer; */
-/*     if (_tf_fixed_rate != 0.0) { */
-/*         tf_timer = */
-/*             this->createTimer(ros::Duration(1.0 / _tf_fixed_rate), [&](const ros::TimerEvent&) { */
-/*                 _update_tf(); */
-/*             }); */
-/*     } */
+    return this->create_subscription<geometry_msgs::msg::PoseStamped>(
+        topic,
+        100,
+        [&, entity_path](const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
+            log_pose_stamped(_rec, entity_path, msg);
+        }
+    );
+}
 
-/*     ros::MultiThreadedSpinner spinner(8); // Use 8 threads */
-/*     spinner.spin(); */
-/* } */
+std::shared_ptr<rclcpp::Subscription<tf2_msgs::msg::TFMessage>>
+    RerunLoggerNode::_create_tf_message_subscription(const std::string& topic) {
+    std::string entity_path = _resolve_entity_path(topic);
+
+    return this->create_subscription<tf2_msgs::msg::TFMessage>(
+        topic,
+        100,
+        [&, entity_path](const tf2_msgs::msg::TFMessage::SharedPtr msg) {
+            log_tf_message(_rec, _tf_frame_to_entity_path, msg);
+        }
+    );
+}
+
+std::shared_ptr<rclcpp::Subscription<nav_msgs::msg::Odometry>>
+    RerunLoggerNode::_create_odometry_subscription(const std::string& topic) {
+    std::string entity_path = _resolve_entity_path(topic);
+
+    return this->create_subscription<nav_msgs::msg::Odometry>(
+        topic,
+        100,
+        [&, entity_path](const nav_msgs::msg::Odometry::SharedPtr msg) {
+            log_odometry(_rec, entity_path, msg);
+        }
+    );
+}
+
+std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::CameraInfo>>
+    RerunLoggerNode::_create_camera_info_subscription(const std::string& topic) {
+    std::string entity_path = _resolve_entity_path(topic);
+
+    // If the camera_info topic has not been explicility mapped to an entity path,
+    // we assume that the camera_info topic is a sibling of the image topic, and
+    // hence use the parent as the entity path for the pinhole model.
+    if (_topic_to_entity_path.find(topic) == _topic_to_entity_path.end()) {
+        entity_path = parent_entity_path(entity_path);
+    }
+
+    return this->create_subscription<sensor_msgs::msg::CameraInfo>(
+        topic,
+        100,
+        [&, entity_path](const sensor_msgs::msg::CameraInfo::SharedPtr msg) {
+            log_camera_info(_rec, entity_path, msg);
+        }
+    );
+}
 
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);

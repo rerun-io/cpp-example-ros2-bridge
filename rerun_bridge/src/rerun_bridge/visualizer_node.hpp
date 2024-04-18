@@ -43,6 +43,9 @@ class RerunLoggerNode : public rclcpp::Node {
     std::unique_ptr<tf2_ros::Buffer> _tf_buffer;
     std::unique_ptr<tf2_ros::TransformListener> _tf_listener;
 
+    rclcpp::TimerBase::SharedPtr _create_subscriptions_timer;
+    rclcpp::TimerBase::SharedPtr _update_tf_timer;
+
     void _create_subscriptions();
     void _update_tf();
 

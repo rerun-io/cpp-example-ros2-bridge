@@ -46,5 +46,5 @@ ament_export_libraries(${PROJECT_NAME})
 ament_package()
 
 
-# install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 install(TARGETS visualizer DESTINATION lib/${PROJECT_NAME})
