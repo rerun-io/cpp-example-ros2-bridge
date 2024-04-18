@@ -6,6 +6,7 @@
 #include <memory>
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
+#include <ament_index_cpp/get_package_prefix.hpp>
 
 std::string parent_entity_path(const std::string& entity_path) {
     auto last_slash = entity_path.rfind('/');
@@ -19,15 +20,16 @@ std::string resolve_ros_path(const std::string& path) {
     if (path.find("package://") == 0) {
         std::string package_name = path.substr(10, path.find('/', 10) - 10);
         std::string relative_path = path.substr(10 + package_name.size());
-        std::string package_path = ament_index_cpp::get_package_share_directory("package_name");
-        if (package_path.empty()) {
+        try {
+            std::string package_path = ament_index_cpp::get_package_share_directory(package_name);
+            return package_path + relative_path;
+        } catch (ament_index_cpp::PackageNotFoundError& e) {
             throw std::runtime_error(
                 "Could not resolve " + path +
                 ". Replace with relative / absolute path, source the correct ROS environment, or install " +
                 package_name + "."
             );
         }
-        return package_path + relative_path;
     } else if (path.find("file://") == 0) {
         return path.substr(7);
     } else {
@@ -40,6 +42,7 @@ RerunLoggerNode::RerunLoggerNode() : Node("rerun_logger_node") {
 
     _tf_buffer = std::make_unique<tf2_ros::Buffer>(this->get_clock());
     _tf_listener = std::make_unique<tf2_ros::TransformListener>(*_tf_buffer);
+
 
     // Read additional config from yaml file
     // NOTE We're not using the ROS parameter server for this, because roscpp doesn't support
@@ -137,7 +140,7 @@ void RerunLoggerNode::_read_yaml_config(std::string yaml_path) {
             _tf_fixed_rate = config["tf"]["update_rate"].as<float>();
         }
 
-        if (config["tf"]["tree"]) {
+        if (config["tf"]["tree"] && config["tf"]["tree"].size()) {
             // set root frame, all messages with frame_id will be logged relative to this frame
             _root_frame = config["tf"]["tree"].begin()->first.as<std::string>();
 
@@ -151,7 +154,7 @@ void RerunLoggerNode::_read_yaml_config(std::string yaml_path) {
         if (config["urdf"]["entity_path"]) {
             urdf_entity_path = config["urdf"]["entity_path"].as<std::string>();
         }
-        if (config["urdf"]["file_path"]) {
+        if (config["urdf"]["file_path"] && config["urdf"]["file_path"].size()) {
             std::string urdf_file_path =
                 resolve_ros_path(config["urdf"]["file_path"].as<std::string>());
             RCLCPP_INFO(
@@ -186,8 +189,8 @@ void RerunLoggerNode::_add_tf_tree(
 }
 
 void RerunLoggerNode::_create_subscriptions() {
-    const auto topic_name_to_topic_types = this->get_topic_names_and_types();
-    for (const auto& [topic_name, topic_types] : topic_name_to_topic_types) {
+    RCLCPP_INFO(this->get_logger(), "Creating subscriptions");
+    for (const auto& [topic_name, topic_types] : this->get_topic_names_and_types()) {
         // already subscribed to this topic?
         if (_topic_to_subscription.find(topic_name) != _topic_to_subscription.end()) {
             continue;
@@ -203,18 +206,19 @@ void RerunLoggerNode::_create_subscriptions() {
         }
 
         const auto topic_type = topic_types[0];
+        RCLCPP_INFO(this->get_logger(), "Checking topic %s (%s)", topic_name.c_str(), topic_type.c_str());
 
-        if (topic_type == "sensor_msgs/Image") {
+        if (topic_type == "sensor_msgs/msg/Image") {
             _topic_to_subscription[topic_name] = _create_image_subscription(topic_name);
-        } else if (topic_type == "sensor_msgs/Imu") {
+        } else if (topic_type == "sensor_msgs/msg/Imu") {
             _topic_to_subscription[topic_name] = _create_imu_subscription(topic_name);
-        } else if (topic_type == "geometry_msgs/PoseStamped") {
+        } else if (topic_type == "geometry_msgs/msg/PoseStamped") {
             _topic_to_subscription[topic_name] = _create_pose_stamped_subscription(topic_name);
-        } else if (topic_type == "tf2_msgs/TFMessage") {
+        } else if (topic_type == "tf2_msgs/msg/TFMessage") {
             _topic_to_subscription[topic_name] = _create_tf_message_subscription(topic_name);
-        } else if (topic_type == "nav_msgs/Odometry") {
+        } else if (topic_type == "nav_msgs/msg/Odometry") {
             _topic_to_subscription[topic_name] = _create_odometry_subscription(topic_name);
-        } else if (topic_type == "sensor_msgs/CameraInfo") {
+        } else if (topic_type == "sensor_msgs/msg/CameraInfo") {
             _topic_to_subscription[topic_name] = _create_camera_info_subscription(topic_name);
         }
     }
@@ -249,6 +253,13 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Image>>
     RerunLoggerNode::_create_image_subscription(const std::string& topic) {
     std::string entity_path = _resolve_entity_path(topic);
     bool lookup_transform = (_topic_to_entity_path.find(topic) == _topic_to_entity_path.end());
+
+    RCLCPP_INFO(
+        this->get_logger(),
+        "Subscribing to image topic %s, logging to entity path %s",
+        topic.c_str(),
+        entity_path.c_str()
+    );
 
     return this->create_subscription<sensor_msgs::msg::Image>(
         topic,

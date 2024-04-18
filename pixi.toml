@@ -50,6 +50,13 @@ cmd = "ls && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT
 depends_on = ["ws"]
 cwd = "humble_ws"
 
+
+[tasks.carla_example]
+cmd = "bash -c 'source ./install/setup.bash && ros2 launch rerun_bridge carla_example.launch'"
+depends_on = ["build", "ws", "rerun_viewer"]
+cwd = "humble_ws"
+
+
 # Install Rerun and URDF loader manually via pip3, this should be replaced with direct pypi dependencies in the future.
 # Wait for direct branch and find-links support in pixi. Otherwise updating to a prerelease becomes a hassle.
 # See: 
