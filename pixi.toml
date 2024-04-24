@@ -17,7 +17,7 @@ description = "rerun_bridge2"
 homepage = "https://rerun.io"
 license = "MIT OR Apache-2.0"
 
-platforms = ["linux-64", "linux-aarch64", "osx-arm64", "osx-64", "win-64"]
+platforms = ["linux-64"]
 readme = "README.md"
 repository = "https://github.com/rerun-io/cpp-example-ros2-bridge"
 version = "0.1.0"
@@ -41,25 +41,49 @@ cpp-fmt-check = { cmd = "clang-format --dry-run --Werror -i rerun_bridge/**/*.[h
 # Check for typos
 lint-typos = "typos"
 
+# ------------------------------------------------------------------------------------------
+# ROS2 stuff:
 [tasks.ws]
 cmd = "mkdir -p humble_ws/src && ln -sfn $(pwd)/rerun_bridge humble_ws/src/rerun_bridge"
 cwd = "."
 
 [tasks.build]
-cmd = "ls && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+cmd = "colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
 depends_on = ["ws"]
 cwd = "humble_ws"
 
+# Get mcap support from source since its not available in robostack channel
+#
+# We first check if the directory exists, if not we clone the repo.
+[tasks.mcap_clone]
+cmd = """
+cd rosbag2_storage_mcap
+|| git clone https://github.com/ros-tooling/rosbag2_storage_mcap.git
+"""
+depends_on = ["ws"]
+cwd = "humble_ws/src"
+outputs = ["rosbag2_storage_mcap"]
 
-[tasks.carla_example]
-cmd = "bash -c 'source ./install/setup.bash && ros2 launch rerun_bridge carla_example.launch'"
-depends_on = ["build", "ws", "rerun_viewer"]
+[tasks.mcap_build]
+cmd = "colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+depends_on = ["ws", "mcap_clone"]
 cwd = "humble_ws"
 
+# ------------------------------------------------------------------------------------------
+# Examples:
+[tasks.carla_example]
+cmd = "bash -c 'source ./install/local_setup.bash && ros2 launch rerun_bridge carla_example.launch'"
+depends_on = ["mcap_build", "rerun_viewer"]
+cwd = "humble_ws"
+
+[tasks.minimal_example]
+cmd = "bash -c 'source ./install/setup.bash && ros2 launch rerun_bridge minimal_example.launch'"
+depends_on = ["build", "rerun_viewer"]
+cwd = "humble_ws"
 
 # Install Rerun and URDF loader manually via pip3, this should be replaced with direct pypi dependencies in the future.
 # Wait for direct branch and find-links support in pixi. Otherwise updating to a prerelease becomes a hassle.
-# See: 
+# See:
 #  https://pixi.sh/latest/reference/configuration/#pypi-dependencies-beta-feature
 #  https://github.com/prefix-dev/pixi/issues/1163
 
@@ -84,7 +108,10 @@ ninja = "1.11.1"
 # Misc linting:
 typos = ">=1.20.9,<1.21"
 
-# ROS bridge dependencies:
+# Rerun bridge dependencies:
 ros-humble-desktop = ">=0.10.0,<0.11"
 yaml-cpp = ">=0.8.0,<0.9"
 opencv = ">=4.9.0,<4.10"
+
+# Additional dependencies for mcap support
+ros-humble-rosbag2-test-common = ">=0.15.9,<0.16"

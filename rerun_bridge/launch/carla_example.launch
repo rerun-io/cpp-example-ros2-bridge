@@ -2,9 +2,7 @@
   <!-- <param name="/use_sim_time" value="true" /> -->
 
   <!-- Play the example ROS bag -->
-  <!-- <executable cmd="ros2 bag play -l $(find-pkg-share rerun_bridge)/rosbag2_2024_03_28-17_00_36_mcap" /> -->
-  <executable cmd="ros2 bag play -l $(find-pkg-share rerun_bridge)/rosbag2_2024_03_28-16_58_29_sqlite3" />
-
+  <executable cmd="ros2 bag play $(find-pkg-share rerun_bridge)/rosbag2_2024_03_28-17_00_36_mcap" />
 
   <!-- Run the Rerun bridge node -->
   <node name="rerun_bridge_node" pkg="rerun_bridge" exec="visualizer">
