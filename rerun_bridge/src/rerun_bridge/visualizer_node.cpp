@@ -5,8 +5,8 @@
 #include <chrono>
 #include <memory>
 
-#include <ament_index_cpp/get_package_share_directory.hpp>
 #include <ament_index_cpp/get_package_prefix.hpp>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 
 std::string parent_entity_path(const std::string& entity_path) {
     auto last_slash = entity_path.rfind('/');
@@ -42,7 +42,6 @@ RerunLoggerNode::RerunLoggerNode() : Node("rerun_logger_node") {
 
     _tf_buffer = std::make_unique<tf2_ros::Buffer>(this->get_clock());
     _tf_listener = std::make_unique<tf2_ros::TransformListener>(*_tf_buffer);
-
 
     // Read additional config from yaml file
     // NOTE We're not using the ROS parameter server for this, because roscpp doesn't support
@@ -189,7 +188,6 @@ void RerunLoggerNode::_add_tf_tree(
 }
 
 void RerunLoggerNode::_create_subscriptions() {
-    RCLCPP_INFO(this->get_logger(), "Creating subscriptions");
     for (const auto& [topic_name, topic_types] : this->get_topic_names_and_types()) {
         // already subscribed to this topic?
         if (_topic_to_subscription.find(topic_name) != _topic_to_subscription.end()) {
@@ -206,7 +204,6 @@ void RerunLoggerNode::_create_subscriptions() {
         }
 
         const auto topic_type = topic_types[0];
-        RCLCPP_INFO(this->get_logger(), "Checking topic %s (%s)", topic_name.c_str(), topic_type.c_str());
 
         if (topic_type == "sensor_msgs/msg/Image") {
             _topic_to_subscription[topic_name] = _create_image_subscription(topic_name);
@@ -244,7 +241,13 @@ void RerunLoggerNode::_update_tf() {
                 _tf_buffer->lookupTransform(parent->second, frame, now - rclcpp::Duration(1, 0));
             log_transform(_rec, entity_path, transform);
         } catch (tf2::TransformException& ex) {
-            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1.0, "bla");
+            RCLCPP_WARN_THROTTLE(
+                this->get_logger(),
+                *this->get_clock(),
+                1000,
+                "Could not lookup transform: %s",
+                ex.what()
+            );
         }
     }
 }
