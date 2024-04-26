@@ -23,6 +23,7 @@ class RerunLoggerNode : public rclcpp::Node {
     void spin();
 
   private:
+    rclcpp::CallbackGroup::SharedPtr _parallel_callback_group;
     std::map<std::string, std::string> _topic_to_entity_path;
     std::map<std::string, std::shared_ptr<rclcpp::SubscriptionBase>> _topic_to_subscription;
     std::map<std::string, std::string> _tf_frame_to_entity_path;

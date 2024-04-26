@@ -8,6 +8,8 @@
 #include <ament_index_cpp/get_package_prefix.hpp>
 #include <ament_index_cpp/get_package_share_directory.hpp>
 
+using namespace std::chrono_literals;
+
 std::string parent_entity_path(const std::string& entity_path) {
     auto last_slash = entity_path.rfind('/');
     if (last_slash == std::string::npos) {
@@ -40,6 +42,9 @@ std::string resolve_ros_path(const std::string& path) {
 RerunLoggerNode::RerunLoggerNode() : Node("rerun_logger_node") {
     _rec.spawn().exit_on_failure();
 
+    _parallel_callback_group =
+        this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+
     _tf_buffer = std::make_unique<tf2_ros::Buffer>(this->get_clock());
     _tf_listener = std::make_unique<tf2_ros::TransformListener>(*_tf_buffer);
 
@@ -54,16 +59,18 @@ RerunLoggerNode::RerunLoggerNode() : Node("rerun_logger_node") {
     _read_yaml_config(yaml_path);
 
     // check for new topics every 0.1 seconds
-    _create_subscriptions_timer =
-        this->create_wall_timer(std::chrono::milliseconds(100), [&]() -> void {
-            _create_subscriptions();
-        });
+    _create_subscriptions_timer = this->create_wall_timer(
+        100ms,
+        [&]() -> void { _create_subscriptions(); },
+        _parallel_callback_group
+    );
 
     if (_tf_fixed_rate != 0.0) {
-        _update_tf_timer =
-            this->create_wall_timer(std::chrono::duration<float>(1. / _tf_fixed_rate), [&]() {
-                _update_tf();
-            });
+        _update_tf_timer = this->create_wall_timer(
+            std::chrono::duration<float>(1. / _tf_fixed_rate),
+            [&]() { _update_tf(); },
+            _parallel_callback_group
+        );
     }
 }
 
@@ -190,6 +197,8 @@ void RerunLoggerNode::_add_tf_tree(
 }
 
 void RerunLoggerNode::_create_subscriptions() {
+    RCLCPP_INFO(this->get_logger(), "Creating subscriptions");
+
     for (const auto& [topic_name, topic_types] : this->get_topic_names_and_types()) {
         // already subscribed to this topic?
         if (_topic_to_subscription.find(topic_name) != _topic_to_subscription.end()) {
@@ -224,6 +233,8 @@ void RerunLoggerNode::_create_subscriptions() {
 }
 
 void RerunLoggerNode::_update_tf() {
+    RCLCPP_INFO(this->get_logger(), "Update TF transforms");
+
     // NOTE We log the interpolated transforms with an offset assuming the whole tree has
     //  been updated after this offset. This is not an ideal solution. If a frame is updated
     //  with a delay longer than this offset we will never log interpolated transforms for it.
@@ -264,6 +275,9 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Image>>
         image_options = _topic_options.at(topic).as<ImageOptions>();
     }
 
+    rclcpp::SubscriptionOptions subscription_options;
+    subscription_options.callback_group = _parallel_callback_group;
+
     RCLCPP_INFO(
         this->get_logger(),
         "Subscribing to image topic %s, logging to entity path %s",
@@ -283,7 +297,7 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Image>>
                         _root_frame,
                         msg->header.frame_id,
                         msg->header.stamp,
-                        std::chrono::milliseconds(100)
+                        100ms
                     );
                     log_transform(_rec, parent_entity_path(entity_path), transform);
                 } catch (tf2::TransformException& ex) {
@@ -291,65 +305,80 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Image>>
                 }
             }
             log_image(_rec, entity_path, msg, image_options);
-        }
+        },
+        subscription_options
     );
 }
 
 std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Imu>>
     RerunLoggerNode::_create_imu_subscription(const std::string& topic) {
     std::string entity_path = _resolve_entity_path(topic);
+    rclcpp::SubscriptionOptions subscription_options;
+    subscription_options.callback_group = _parallel_callback_group;
 
     return this->create_subscription<sensor_msgs::msg::Imu>(
         topic,
         1000,
         [&, entity_path](const sensor_msgs::msg::Imu::SharedPtr msg) {
             log_imu(_rec, entity_path, msg);
-        }
+        },
+        subscription_options
     );
 }
 
 std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::PoseStamped>>
     RerunLoggerNode::_create_pose_stamped_subscription(const std::string& topic) {
     std::string entity_path = _resolve_entity_path(topic);
+    rclcpp::SubscriptionOptions subscription_options;
+    subscription_options.callback_group = _parallel_callback_group;
 
     return this->create_subscription<geometry_msgs::msg::PoseStamped>(
         topic,
         1000,
         [&, entity_path](const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
             log_pose_stamped(_rec, entity_path, msg);
-        }
+        },
+        subscription_options
     );
 }
 
 std::shared_ptr<rclcpp::Subscription<tf2_msgs::msg::TFMessage>>
     RerunLoggerNode::_create_tf_message_subscription(const std::string& topic) {
     std::string entity_path = _resolve_entity_path(topic);
+    rclcpp::SubscriptionOptions subscription_options;
+    subscription_options.callback_group = _parallel_callback_group;
 
     return this->create_subscription<tf2_msgs::msg::TFMessage>(
         topic,
         1000,
         [&, entity_path](const tf2_msgs::msg::TFMessage::SharedPtr msg) {
             log_tf_message(_rec, _tf_frame_to_entity_path, msg);
-        }
+        },
+        subscription_options
     );
 }
 
 std::shared_ptr<rclcpp::Subscription<nav_msgs::msg::Odometry>>
     RerunLoggerNode::_create_odometry_subscription(const std::string& topic) {
     std::string entity_path = _resolve_entity_path(topic);
+    rclcpp::SubscriptionOptions subscription_options;
+    subscription_options.callback_group = _parallel_callback_group;
 
     return this->create_subscription<nav_msgs::msg::Odometry>(
         topic,
         1000,
         [&, entity_path](const nav_msgs::msg::Odometry::SharedPtr msg) {
             log_odometry(_rec, entity_path, msg);
-        }
+        },
+        subscription_options
     );
 }
 
 std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::CameraInfo>>
     RerunLoggerNode::_create_camera_info_subscription(const std::string& topic) {
     std::string entity_path = _resolve_entity_path(topic);
+    rclcpp::SubscriptionOptions subscription_options;
+    subscription_options.callback_group = _parallel_callback_group;
 
     // If the camera_info topic has not been explicility mapped to an entity path,
     // we assume that the camera_info topic is a sibling of the image topic, and
@@ -363,7 +392,8 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::CameraInfo>>
         1,
         [&, entity_path](const sensor_msgs::msg::CameraInfo::SharedPtr msg) {
             log_camera_info(_rec, entity_path, msg);
-        }
+        },
+        subscription_options
     );
 }
 
@@ -397,7 +427,13 @@ namespace YAML {
 
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<RerunLoggerNode>());
+    rclcpp::executors::MultiThreadedExecutor executor;
+
+    // Executor does not take ownership of the node, so we have to maintain a shared_ptr
+    auto rerun_logger_node = std::make_shared<RerunLoggerNode>();
+    executor.add_node(rerun_logger_node);
+
+    executor.spin();
     rclcpp::shutdown();
     return 0;
 }
