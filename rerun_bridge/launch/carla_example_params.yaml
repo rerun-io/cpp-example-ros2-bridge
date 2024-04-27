@@ -1,4 +1,10 @@
-topic_to_entity_path: {}
+topic_to_entity_path:
+  /carla/ego_vehicle/rgb_front/image: /map/ego_vehicle/ego_vehicle/rgb_front
+  /carla/ego_vehicle/rgb_front/camera_info: /map/ego_vehicle/ego_vehicle/rgb_front
+  /carla/ego_vehicle/rgb_left/image: /map/ego_vehicle/ego_vehicle/rgb_left
+  /carla/ego_vehicle/rgb_left/camera_info: /map/ego_vehicle/ego_vehicle/rgb_left
+  /carla/ego_vehicle/rgb_right/image: /map/ego_vehicle/ego_vehicle/rgb_right
+  /carla/ego_vehicle/rgb_right/camera_info: /map/ego_vehicle/ego_vehicle/rgb_right
 extra_transform3ds: []
 extra_pinholes: []
 tf:
@@ -16,11 +22,12 @@ tf:
         ego_vehicle/lidar: null
         ego_vehicle/radar_front: null
         ego_vehicle/rgb_front: null
+        ego_vehicle/rgb_left: null
+        ego_vehicle/rgb_right: null
         ego_vehicle/rgb_view: null
         ego_vehicle/semantic_lidar: null
         ego_vehicle/semantic_segmentation_front: null
         ego_vehicle/lane_invasion: null
-
 urdf:
   file_path: ""
   entity_path: "odom"
