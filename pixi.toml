@@ -71,14 +71,15 @@ cwd = "humble_ws"
 
 # ------------------------------------------------------------------------------------------
 # Examples:
+[tasks.carla_example_data]
+cmd = "curl -L -C - -O https://storage.googleapis.com/rerun-example-datasets/carla_ros2.zip && unzip carla_ros2.zip"
+depends_on=["build"]
+outputs = ["carla_ros2/carla_ros2.db3"]
+cwd = "humble_ws/install/rerun_bridge/share/rerun_bridge"
+
 [tasks.carla_example]
 cmd = "bash -c 'source ./install/local_setup.bash && ros2 launch rerun_bridge carla_example.launch'"
-depends_on = ["mcap_build", "rerun_viewer"]
-cwd = "humble_ws"
-
-[tasks.minimal_example]
-cmd = "bash -c 'source ./install/setup.bash && ros2 launch rerun_bridge minimal_example.launch'"
-depends_on = ["build", "rerun_viewer"]
+depends_on = ["build", "rerun_viewer", "carla_example_data"]
 cwd = "humble_ws"
 
 # Install Rerun and URDF loader manually via pip3, this should be replaced with direct pypi dependencies in the future.
