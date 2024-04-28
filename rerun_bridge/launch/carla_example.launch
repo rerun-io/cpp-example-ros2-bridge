@@ -1,6 +1,6 @@
 <launch>
-  <!-- The bag for this example was generated using the following commands:
-    1. ./CarlaUE4.sh
+  <!-- The bag for this example was generated using the following steps:
+    1. Start the CARLA simulator
     2. ros2 launch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch.py 
        (modified launch file and sensor configuration)
     3. python generate_traffic.py -asynch (https://github.com/carla-simulator/carla/blob/dev/PythonAPI/examples/generate_traffic.py)
