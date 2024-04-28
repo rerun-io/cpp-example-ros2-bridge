@@ -28,6 +28,9 @@ tf:
         ego_vehicle/semantic_lidar: null
         ego_vehicle/semantic_segmentation_front: null
         ego_vehicle/lane_invasion: null
+topic_options:
+  /carla/ego_vehicle/depth_front/image:
+    max_depth: 100.0
 urdf:
   file_path: ""
   entity_path: "odom"

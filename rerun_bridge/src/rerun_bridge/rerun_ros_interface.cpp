@@ -21,7 +21,7 @@ void log_imu(
 
 void log_image(
     const rerun::RecordingStream& rec, const std::string& entity_path,
-    const sensor_msgs::msg::Image::ConstSharedPtr& msg
+    const sensor_msgs::msg::Image::ConstSharedPtr& msg, const ImageOptions& options
 ) {
     rec.set_time_seconds(
         "timestamp",
@@ -41,8 +41,13 @@ void log_image(
                 .with_meter(1000)
         );
     } else if (msg->encoding == "32FC1") {
-        // NOTE this has not been tested
         cv::Mat img = cv_bridge::toCvCopy(msg)->image;
+        if (options.min_depth) {
+            cv::threshold(img, img, options.min_depth.value(), 0, cv::THRESH_TOZERO);
+        }
+        if (options.max_depth) {
+            cv::threshold(img, img, options.max_depth.value(), 0, cv::THRESH_TOZERO_INV);
+        }
         rec.log(
             entity_path,
             rerun::DepthImage(

@@ -18,9 +18,14 @@ void log_imu(
     const sensor_msgs::msg::Imu::ConstSharedPtr& msg
 );
 
+struct ImageOptions {
+    std::optional<float> min_depth;
+    std::optional<float> max_depth;
+};
+
 void log_image(
     const rerun::RecordingStream& rec, const std::string& entity_path,
-    const sensor_msgs::msg::Image::ConstSharedPtr& msg
+    const sensor_msgs::msg::Image::ConstSharedPtr& msg, const ImageOptions& options = ImageOptions{}
 );
 
 void log_pose_stamped(

@@ -110,8 +110,7 @@ void RerunLoggerNode::_read_yaml_config(std::string yaml_path) {
             const std::array<float, 3> translation = {
                 extra_transform3d["transform"][3].as<float>(),
                 extra_transform3d["transform"][7].as<float>(),
-                extra_transform3d["transform"][11].as<float>()
-            };
+                extra_transform3d["transform"][11].as<float>()};
             // Rerun uses column-major order for Mat3x3
             const std::array<float, 9> mat3x3 = {
                 extra_transform3d["transform"][0].as<float>(),
@@ -122,8 +121,7 @@ void RerunLoggerNode::_read_yaml_config(std::string yaml_path) {
                 extra_transform3d["transform"][9].as<float>(),
                 extra_transform3d["transform"][2].as<float>(),
                 extra_transform3d["transform"][6].as<float>(),
-                extra_transform3d["transform"][10].as<float>()
-            };
+                extra_transform3d["transform"][10].as<float>()};
             _rec.log_timeless(
                 extra_transform3d["entity_path"].as<std::string>(),
                 rerun::Transform3D(
@@ -146,6 +144,10 @@ void RerunLoggerNode::_read_yaml_config(std::string yaml_path) {
             // recurse through the tree and add all transforms
             _add_tf_tree(config["tf"]["tree"], "", "");
         }
+    }
+
+    if (config["topic_options"]) {
+        _topic_options = config["topic_options"].as<std::map<std::string, YAML::Node>>();
     }
 
     if (config["urdf"]) {
@@ -256,6 +258,11 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Image>>
     RerunLoggerNode::_create_image_subscription(const std::string& topic) {
     std::string entity_path = _resolve_entity_path(topic);
     bool lookup_transform = (_topic_to_entity_path.find(topic) == _topic_to_entity_path.end());
+    ImageOptions image_options;
+
+    if (_topic_options.find(topic) != _topic_options.end()) {
+        image_options = _topic_options.at(topic).as<ImageOptions>();
+    }
 
     RCLCPP_INFO(
         this->get_logger(),
@@ -266,8 +273,10 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Image>>
 
     return this->create_subscription<sensor_msgs::msg::Image>(
         topic,
-        100,
-        [&, entity_path, lookup_transform](const sensor_msgs::msg::Image::SharedPtr msg) {
+        1000,
+        [&, entity_path, lookup_transform, image_options](
+            const sensor_msgs::msg::Image::SharedPtr msg
+        ) {
             if (!_root_frame.empty() && lookup_transform) {
                 try {
                     auto transform = _tf_buffer->lookupTransform(
@@ -281,7 +290,7 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Image>>
                     RCLCPP_WARN(this->get_logger(), "%s", ex.what());
                 }
             }
-            log_image(_rec, entity_path, msg);
+            log_image(_rec, entity_path, msg, image_options);
         }
     );
 }
@@ -292,7 +301,7 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Imu>>
 
     return this->create_subscription<sensor_msgs::msg::Imu>(
         topic,
-        100,
+        1000,
         [&, entity_path](const sensor_msgs::msg::Imu::SharedPtr msg) {
             log_imu(_rec, entity_path, msg);
         }
@@ -305,7 +314,7 @@ std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::PoseStamped>>
 
     return this->create_subscription<geometry_msgs::msg::PoseStamped>(
         topic,
-        100,
+        1000,
         [&, entity_path](const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
             log_pose_stamped(_rec, entity_path, msg);
         }
@@ -318,7 +327,7 @@ std::shared_ptr<rclcpp::Subscription<tf2_msgs::msg::TFMessage>>
 
     return this->create_subscription<tf2_msgs::msg::TFMessage>(
         topic,
-        100,
+        1000,
         [&, entity_path](const tf2_msgs::msg::TFMessage::SharedPtr msg) {
             log_tf_message(_rec, _tf_frame_to_entity_path, msg);
         }
@@ -331,7 +340,7 @@ std::shared_ptr<rclcpp::Subscription<nav_msgs::msg::Odometry>>
 
     return this->create_subscription<nav_msgs::msg::Odometry>(
         topic,
-        100,
+        1000,
         [&, entity_path](const nav_msgs::msg::Odometry::SharedPtr msg) {
             log_odometry(_rec, entity_path, msg);
         }
@@ -351,12 +360,40 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::CameraInfo>>
 
     return this->create_subscription<sensor_msgs::msg::CameraInfo>(
         topic,
-        100,
+        1,
         [&, entity_path](const sensor_msgs::msg::CameraInfo::SharedPtr msg) {
             log_camera_info(_rec, entity_path, msg);
         }
     );
 }
+
+namespace YAML {
+    template <>
+    struct convert<ImageOptions> {
+        static bool decode(const Node& node, ImageOptions& rhs) {
+            int total = 0;
+
+            if (!node.IsMap()) {
+                return false;
+            }
+
+            if (node["min_depth"]) {
+                rhs.min_depth = node["max_depth"].as<float>();
+                ++total;
+            }
+            if (node["max_depth"]) {
+                rhs.max_depth = node["max_depth"].as<float>();
+                ++total;
+            }
+
+            if (total != node.size()) {
+                return false;
+            }
+
+            return true;
+        }
+    };
+} // namespace YAML
 
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
