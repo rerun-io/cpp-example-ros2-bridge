@@ -105,6 +105,10 @@ clang-tools = ">=15,<16" # clang-format
 cxx-compiler = "1.6.0.*"
 ninja = "1.11.1"
 
+# ROS 2 build-tools:
+colcon-core = ">=0.16.0,<0.17"
+colcon-common-extensions = ">=0.3.0,<0.4"
+
 # Misc linting:
 typos = ">=1.20.9,<1.21"
 
