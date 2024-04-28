@@ -15,6 +15,6 @@ jobs:
           pixi-version: v0.19.0
           cache: true
 
-      - run: pixi run cp
+      - run: pixi run cpp-fmt-check
 
       - run: pixi run build
