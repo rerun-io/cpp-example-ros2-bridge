@@ -1,12 +1,14 @@
 <launch>
-  <!-- This bag for this example was generated using the following commands:
-    1. ros2 launch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch.py (modified launch file)
-    2. python generate_traffic.py -asynch (https://github.com/carla-simulator/carla/blob/dev/PythonAPI/examples/generate_traffic.py)
-    3. ros2 bag record -use-sim-time -all
+  <!-- The bag for this example was generated using the following commands:
+    1. ./CarlaUE4.sh
+    2. ros2 launch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch.py 
+       (modified launch file and sensor configuration)
+    3. python generate_traffic.py -asynch (https://github.com/carla-simulator/carla/blob/dev/PythonAPI/examples/generate_traffic.py)
+    4. ros2 bag record -use-sim-time -all
 
     This allows for non-real-time simulation and real-time playback of the bag file.
   -->
-  <executable cmd="ros2 bag play $(find-pkg-share rerun_bridge)/carla_ros2" />
+  <executable cmd="ros2 bag play $(find-pkg-share rerun_bridge)/rosbag2_2024_04_27-15_02_58" />
 
   <!-- Run the Rerun bridge node -->
   <node name="rerun_bridge_node" pkg="rerun_bridge" exec="visualizer">
