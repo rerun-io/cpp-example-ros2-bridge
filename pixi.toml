@@ -72,10 +72,14 @@ cwd = "humble_ws"
 # ------------------------------------------------------------------------------------------
 # Examples:
 [tasks.carla_example_data]
-cmd = "curl -L -C - -O https://storage.googleapis.com/rerun-example-datasets/carla_ros2.zip && unzip carla_ros2.zip"
-depends_on=["build"]
-outputs = ["carla_ros2/carla_ros2.db3"]
+cmd = """
+test -e carla_ros2
+|| (
+  curl -L -C - -O https://storage.googleapis.com/rerun-example-datasets/carla_ros2.zip
+  && unzip carla_ros2.zip)
+"""
 cwd = "humble_ws/install/rerun_bridge/share/rerun_bridge"
+depends_on=["build"]
 
 [tasks.carla_example]
 cmd = "bash -c 'source ./install/local_setup.bash && ros2 launch rerun_bridge carla_example.launch'"
