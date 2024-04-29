@@ -22,6 +22,12 @@ pixi run carla_example
 ## Compile and run using existing ROS environment
 If you have an existing ROS workspace and would like to add the Rerun node to it, clone this repository into the workspace's `src` directory and build the workspace.
 
+To manually run the CARLA example, first download the [CARLA bag](https://storage.googleapis.com/rerun-example-datasets/carla_ros2.zip) and extract it to the `share` directory of the `rerun_bridge` package (typically located in `{workspace_dir}/install/rerun_bridge/share/rerun_bridge`). Then, run the following command:
+
+```shell
+ros2 launch rerun_bridge carla_example.launch
+```
+
 ## Development
 Prior to opening a pull request, run `pixi run lint-typos && pixi run cpp-fmt` to check for typos and format the C++ code.
 
