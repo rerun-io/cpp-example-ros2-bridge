@@ -1,0 +1,36 @@
+topic_to_entity_path:
+  /carla/ego_vehicle/rgb_front/image: /map/ego_vehicle/ego_vehicle/rgb_front
+  /carla/ego_vehicle/rgb_front/camera_info: /map/ego_vehicle/ego_vehicle/rgb_front
+  /carla/ego_vehicle/rgb_left/image: /map/ego_vehicle/ego_vehicle/rgb_left
+  /carla/ego_vehicle/rgb_left/camera_info: /map/ego_vehicle/ego_vehicle/rgb_left
+  /carla/ego_vehicle/rgb_right/image: /map/ego_vehicle/ego_vehicle/rgb_right
+  /carla/ego_vehicle/rgb_right/camera_info: /map/ego_vehicle/ego_vehicle/rgb_right
+extra_transform3ds: []
+extra_pinholes: []
+tf:
+  update_rate: 0.0  # set to 0 to log raw tf data only (i.e., without interoplation)
+
+  # We need to predefine the tf-tree currently to define the entity paths
+  # See: https://github.com/rerun-io/rerun/issues/5242
+  tree: 
+    map:
+      ego_vehicle:
+        ego_vehicle/depth_front: null
+        ego_vehicle/dvs_front: null
+        ego_vehicle/gnss: null
+        ego_vehicle/imu: null
+        ego_vehicle/lidar: null
+        ego_vehicle/radar_front: null
+        ego_vehicle/rgb_front: null
+        ego_vehicle/rgb_left: null
+        ego_vehicle/rgb_right: null
+        ego_vehicle/rgb_view: null
+        ego_vehicle/semantic_lidar: null
+        ego_vehicle/semantic_segmentation_front: null
+        ego_vehicle/lane_invasion: null
+topic_options:
+  /carla/ego_vehicle/depth_front/image:
+    max_depth: 100.0
+urdf:
+  file_path: ""
+  entity_path: "odom"

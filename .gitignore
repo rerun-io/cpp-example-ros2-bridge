@@ -26,3 +26,4 @@ compile_commands.json
 
 # ROS stuff:
 humble_ws
+*.bag

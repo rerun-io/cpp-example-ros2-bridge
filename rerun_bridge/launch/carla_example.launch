@@ -1,0 +1,18 @@
+<launch>
+  <!-- The bag for this example was generated using the following steps:
+    1. Start the CARLA simulator
+    2. ros2 launch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch.py 
+       (modified launch file and sensor configuration)
+    3. python generate_traffic.py -asynch (https://github.com/carla-simulator/carla/blob/dev/PythonAPI/examples/generate_traffic.py)
+    4. ros2 bag record -use-sim-time -all
+
+    This allows for non-real-time simulation and real-time playback of the bag file.
+  -->
+  <executable cmd="ros2 bag play $(find-pkg-share rerun_bridge)/carla_ros2" />
+
+  <!-- Run the Rerun bridge node -->
+  <node name="rerun_bridge_node" pkg="rerun_bridge" exec="visualizer">
+    <param name="yaml_path" value="$(find-pkg-share rerun_bridge)/launch/carla_example_params.yaml" />
+    <param name="use_sim_time" value="true" />
+  </node>
+</launch>
