@@ -56,13 +56,10 @@ cwd = "humble_ws"
 #
 # We first check if the directory exists, if not we clone the repo.
 [tasks.mcap_clone]
-cmd = """
-cd rosbag2_storage_mcap
-|| git clone https://github.com/ros-tooling/rosbag2_storage_mcap.git
-"""
+cmd = "git clone https://github.com/ros-tooling/rosbag2_storage_mcap.git"
 depends_on = ["ws"]
 cwd = "humble_ws/src"
-outputs = ["rosbag2_storage_mcap"]
+outputs = ["humble_ws/src/rosbag2_storage_mcap"]
 
 [tasks.mcap_build]
 cmd = "colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
@@ -72,13 +69,9 @@ cwd = "humble_ws"
 # ------------------------------------------------------------------------------------------
 # Examples:
 [tasks.carla_example_data]
-cmd = """
-test -e carla_ros2
-|| (
-  curl -L -C - -O https://storage.googleapis.com/rerun-example-datasets/carla_ros2.zip
-  && unzip carla_ros2.zip)
-"""
+cmd = "curl -L -C - -O https://storage.googleapis.com/rerun-example-datasets/carla_ros2.zip && unzip carla_ros2.zip"
 cwd = "humble_ws/install/rerun_bridge/share/rerun_bridge"
+outputs = ["humble_ws/install/rerun_bridge/share/rerun_bridge/carla_ros2"]
 depends_on=["build"]
 
 [tasks.carla_example]
