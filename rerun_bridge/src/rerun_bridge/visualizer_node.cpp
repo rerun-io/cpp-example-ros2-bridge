@@ -48,6 +48,9 @@ RerunLoggerNode::RerunLoggerNode() : Node("rerun_logger_node") {
     _tf_buffer = std::make_unique<tf2_ros::Buffer>(this->get_clock());
     _tf_listener = std::make_unique<tf2_ros::TransformListener>(*_tf_buffer);
 
+    auto now = this->get_clock()->now();
+    _last_tf_update_time = now;
+
     // Read additional config from yaml file
     // NOTE We're not using the ROS parameter server for this, because roscpp doesn't support
     //   reading nested data structures.
@@ -197,8 +200,6 @@ void RerunLoggerNode::_add_tf_tree(
 }
 
 void RerunLoggerNode::_create_subscriptions() {
-    RCLCPP_INFO(this->get_logger(), "Creating subscriptions");
-
     for (const auto& [topic_name, topic_types] : this->get_topic_names_and_types()) {
         // already subscribed to this topic?
         if (_topic_to_subscription.find(topic_name) != _topic_to_subscription.end()) {
@@ -233,8 +234,6 @@ void RerunLoggerNode::_create_subscriptions() {
 }
 
 void RerunLoggerNode::_update_tf() {
-    RCLCPP_INFO(this->get_logger(), "Update TF transforms");
-
     // NOTE We log the interpolated transforms with an offset assuming the whole tree has
     //  been updated after this offset. This is not an ideal solution. If a frame is updated
     //  with a delay longer than this offset we will never log interpolated transforms for it.
@@ -244,6 +243,13 @@ void RerunLoggerNode::_update_tf() {
     //  out of order (maybe this is not a problem in practice?).
 
     auto now = this->get_clock()->now();
+
+    // If no time has passed since the last update, don't do anything
+    // This can happen when using simulation time that does not keep going at the end
+    if (now - _last_tf_update_time == 0s) {
+        return;
+    }
+
     for (const auto& [frame, entity_path] : _tf_frame_to_entity_path) {
         auto parent = _tf_frame_to_parent.find(frame);
         if (parent == _tf_frame_to_parent.end() or parent->second.empty()) {
@@ -253,6 +259,7 @@ void RerunLoggerNode::_update_tf() {
             auto transform =
                 _tf_buffer->lookupTransform(parent->second, frame, now - rclcpp::Duration(1, 0));
             log_transform(_rec, entity_path, transform);
+            _last_tf_update_time = now;
         } catch (tf2::TransformException& ex) {
             RCLCPP_WARN_THROTTLE(
                 this->get_logger(),
@@ -287,7 +294,7 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Image>>
 
     return this->create_subscription<sensor_msgs::msg::Image>(
         topic,
-        1000,
+        10,
         [&, entity_path, lookup_transform, image_options](
             const sensor_msgs::msg::Image::SharedPtr msg
         ) {
@@ -318,7 +325,7 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Imu>>
 
     return this->create_subscription<sensor_msgs::msg::Imu>(
         topic,
-        1000,
+        10,
         [&, entity_path](const sensor_msgs::msg::Imu::SharedPtr msg) {
             log_imu(_rec, entity_path, msg);
         },
@@ -334,7 +341,7 @@ std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::PoseStamped>>
 
     return this->create_subscription<geometry_msgs::msg::PoseStamped>(
         topic,
-        1000,
+        10,
         [&, entity_path](const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
             log_pose_stamped(_rec, entity_path, msg);
         },
@@ -350,7 +357,7 @@ std::shared_ptr<rclcpp::Subscription<tf2_msgs::msg::TFMessage>>
 
     return this->create_subscription<tf2_msgs::msg::TFMessage>(
         topic,
-        1000,
+        10,
         [&, entity_path](const tf2_msgs::msg::TFMessage::SharedPtr msg) {
             log_tf_message(_rec, _tf_frame_to_entity_path, msg);
         },
@@ -366,7 +373,7 @@ std::shared_ptr<rclcpp::Subscription<nav_msgs::msg::Odometry>>
 
     return this->create_subscription<nav_msgs::msg::Odometry>(
         topic,
-        1000,
+        10,
         [&, entity_path](const nav_msgs::msg::Odometry::SharedPtr msg) {
             log_odometry(_rec, entity_path, msg);
         },

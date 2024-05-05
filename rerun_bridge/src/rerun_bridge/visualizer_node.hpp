@@ -29,6 +29,7 @@ class RerunLoggerNode : public rclcpp::Node {
     std::map<std::string, std::string> _tf_frame_to_entity_path;
     std::map<std::string, std::string> _tf_frame_to_parent;
     std::map<std::string, YAML::Node> _topic_options;
+    rclcpp::Time _last_tf_update_time;
 
     void _read_yaml_config(std::string yaml_path);
 
