@@ -101,20 +101,6 @@ std::string RerunLoggerNode::_resolve_entity_path(const std::string& topic) cons
 void RerunLoggerNode::_read_yaml_config(std::string yaml_path) {
     const YAML::Node config = YAML::LoadFile(yaml_path);
 
-    // see https://www.rerun.io/docs/howto/ros2-nav-turtlebot#tf-to-rrtransform3d
-    if (config["topic_to_entity_path"]) {
-        _topic_to_entity_path =
-            config["topic_to_entity_path"].as<std::map<std::string, std::string>>();
-
-        for (auto const& [key, val] : _topic_to_entity_path) {
-            RCLCPP_INFO(
-                this->get_logger(),
-                "Mapping topic %s to entity path %s",
-                key.c_str(),
-                val.c_str()
-            );
-        }
-    }
     if (config["extra_transform3ds"]) {
         for (const auto& extra_transform3d : config["extra_transform3ds"]) {
             const std::array<float, 3> translation = {
@@ -157,6 +143,14 @@ void RerunLoggerNode::_read_yaml_config(std::string yaml_path) {
     }
 
     if (config["topic_options"]) {
+        // explicility allow to map topics to entity paths
+        // otherwise a default logic is applied, see _resolve_entity_path
+        for (auto& [topic, options] : _topic_options) {
+            if (options["entity_path"]) {
+                _topic_to_entity_path[topic] = options["entity_path"].as<std::string>();
+            }
+        }
+
         _topic_options = config["topic_options"].as<std::map<std::string, YAML::Node>>();
     }
 
@@ -415,16 +409,12 @@ namespace YAML {
             }
 
             if (node["min_depth"]) {
-                rhs.min_depth = node["max_depth"].as<float>();
+                rhs.min_depth = node["min_depth"].as<float>();
                 ++total;
             }
             if (node["max_depth"]) {
                 rhs.max_depth = node["max_depth"].as<float>();
                 ++total;
-            }
-
-            if (total != node.size()) {
-                return false;
             }
 
             return true;
