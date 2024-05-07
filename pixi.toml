@@ -79,6 +79,11 @@ cmd = "bash -c 'source ./install/local_setup.bash && ros2 launch rerun_bridge ca
 depends_on = ["build", "rerun_viewer", "carla_example_data"]
 cwd = "humble_ws"
 
+[tasks.go2_example]
+cmd = "bash -c 'source ./install/local_setup.bash && ros2 launch rerun_bridge go2_example.launch'"
+depends_on = ["mcap_build", "rerun_viewer"]
+cwd = "humble_ws"
+
 # Install Rerun and URDF loader manually via pip3, this should be replaced with direct pypi dependencies in the future.
 # Wait for direct branch and find-links support in pixi. Otherwise updating to a prerelease becomes a hassle.
 # See:
