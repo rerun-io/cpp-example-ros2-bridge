@@ -22,6 +22,8 @@ tf:
         ego_vehicle/semantic_segmentation_front: null
         ego_vehicle/lane_invasion: null
 topic_options:
+  /:
+    queue_size: 10
   /carla/ego_vehicle/depth_front/image:
     max_depth: 100.0
   /carla/ego_vehicle/rgb_front/image: 

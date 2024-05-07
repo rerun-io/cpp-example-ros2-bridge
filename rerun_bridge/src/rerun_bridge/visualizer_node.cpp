@@ -98,6 +98,38 @@ std::string RerunLoggerNode::_resolve_entity_path(const std::string& topic) cons
     }
 }
 
+// Resolve topic options for a given topic.
+// The options are merged from all matching keys overwriting previous values in the following order:
+//  1. Options for partial topic names (such as /, /ns, etc.)
+//  2. Options for message types (such as sensor_msgs::msg::Image)
+//  3. Options for the exact topic name (such as /ns/topic)
+// Aside from these rules, the options are merged in the order they are defined in the yaml file.
+std::map<std::string, YAML::Node> RerunLoggerNode::_resolve_topic_options(
+    const std::string& topic, const std::string& message_type
+) const {
+    std::map<std::string, YAML::Node> merged_options;
+    // 1. partial topic names
+    for (const auto& [prefix, options] : _raw_topic_options) {
+        if (topic.find(prefix) == 0) {
+            merged_options.insert(options.begin(), options.end());
+        }
+    }
+
+    // 2. message types
+    if (_raw_topic_options.find(message_type) != _raw_topic_options.end()) {
+        auto options = _raw_topic_options.at(message_type);
+        merged_options.insert(options.begin(), options.end());
+    }
+
+    // 3. exact topic name
+    if (_raw_topic_options.find(topic) != _raw_topic_options.end()) {
+        auto options = _raw_topic_options.at(topic);
+        merged_options.insert(options.begin(), options.end());
+    }
+
+    return merged_options;
+}
+
 void RerunLoggerNode::_read_yaml_config(std::string yaml_path) {
     const YAML::Node config = YAML::LoadFile(yaml_path);
 
@@ -145,13 +177,13 @@ void RerunLoggerNode::_read_yaml_config(std::string yaml_path) {
     if (config["topic_options"]) {
         // explicility allow to map topics to entity paths
         // otherwise a default logic is applied, see _resolve_entity_path
-        for (auto& [topic, options] : _topic_options) {
+        for (auto& [topic, options] : _raw_topic_options) {
             if (options["entity_path"]) {
                 _topic_to_entity_path[topic] = options["entity_path"].as<std::string>();
             }
         }
 
-        _topic_options = config["topic_options"].as<std::map<std::string, YAML::Node>>();
+        _raw_topic_options = config["topic_options"].as<std::map<std::string, YAML::Node>>();
     }
 
     if (config["urdf"]) {
@@ -209,20 +241,27 @@ void RerunLoggerNode::_create_subscriptions() {
             continue;
         }
 
-        const auto topic_type = topic_types[0];
+        const auto message_type = topic_types[0];
+        const auto topic_options = _resolve_topic_options(topic_name, message_type);
 
-        if (topic_type == "sensor_msgs/msg/Image") {
-            _topic_to_subscription[topic_name] = _create_image_subscription(topic_name);
-        } else if (topic_type == "sensor_msgs/msg/Imu") {
-            _topic_to_subscription[topic_name] = _create_imu_subscription(topic_name);
-        } else if (topic_type == "geometry_msgs/msg/PoseStamped") {
-            _topic_to_subscription[topic_name] = _create_pose_stamped_subscription(topic_name);
-        } else if (topic_type == "tf2_msgs/msg/TFMessage") {
-            _topic_to_subscription[topic_name] = _create_tf_message_subscription(topic_name);
-        } else if (topic_type == "nav_msgs/msg/Odometry") {
-            _topic_to_subscription[topic_name] = _create_odometry_subscription(topic_name);
-        } else if (topic_type == "sensor_msgs/msg/CameraInfo") {
-            _topic_to_subscription[topic_name] = _create_camera_info_subscription(topic_name);
+        if (message_type == "sensor_msgs/msg/Image") {
+            _topic_to_subscription[topic_name] =
+                _create_image_subscription(topic_name, topic_options);
+        } else if (message_type == "sensor_msgs/msg/Imu") {
+            _topic_to_subscription[topic_name] =
+                _create_imu_subscription(topic_name, topic_options);
+        } else if (message_type == "geometry_msgs/msg/PoseStamped") {
+            _topic_to_subscription[topic_name] =
+                _create_pose_stamped_subscription(topic_name, topic_options);
+        } else if (message_type == "tf2_msgs/msg/TFMessage") {
+            _topic_to_subscription[topic_name] =
+                _create_tf_message_subscription(topic_name, topic_options);
+        } else if (message_type == "nav_msgs/msg/Odometry") {
+            _topic_to_subscription[topic_name] =
+                _create_odometry_subscription(topic_name, topic_options);
+        } else if (message_type == "sensor_msgs/msg/CameraInfo") {
+            _topic_to_subscription[topic_name] =
+                _create_camera_info_subscription(topic_name, topic_options);
         }
     }
 }
@@ -267,14 +306,12 @@ void RerunLoggerNode::_update_tf() {
 }
 
 std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Image>>
-    RerunLoggerNode::_create_image_subscription(const std::string& topic) {
+    RerunLoggerNode::_create_image_subscription(
+        const std::string& topic, const TopicOptions& topic_options
+    ) {
     std::string entity_path = _resolve_entity_path(topic);
     bool lookup_transform = (_topic_to_entity_path.find(topic) == _topic_to_entity_path.end());
-    ImageOptions image_options;
-
-    if (_topic_options.find(topic) != _topic_options.end()) {
-        image_options = _topic_options.at(topic).as<ImageOptions>();
-    }
+    auto image_options = topic_options.as<ImageOptions>();
 
     rclcpp::SubscriptionOptions subscription_options;
     subscription_options.callback_group = _parallel_callback_group;
@@ -312,7 +349,9 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Image>>
 }
 
 std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Imu>>
-    RerunLoggerNode::_create_imu_subscription(const std::string& topic) {
+    RerunLoggerNode::_create_imu_subscription(
+        const std::string& topic, const TopicOptions& topic_options
+    ) {
     std::string entity_path = _resolve_entity_path(topic);
     rclcpp::SubscriptionOptions subscription_options;
     subscription_options.callback_group = _parallel_callback_group;
@@ -328,7 +367,9 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Imu>>
 }
 
 std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::PoseStamped>>
-    RerunLoggerNode::_create_pose_stamped_subscription(const std::string& topic) {
+    RerunLoggerNode::_create_pose_stamped_subscription(
+        const std::string& topic, const TopicOptions& topic_options
+    ) {
     std::string entity_path = _resolve_entity_path(topic);
     rclcpp::SubscriptionOptions subscription_options;
     subscription_options.callback_group = _parallel_callback_group;
@@ -344,7 +385,9 @@ std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::PoseStamped>>
 }
 
 std::shared_ptr<rclcpp::Subscription<tf2_msgs::msg::TFMessage>>
-    RerunLoggerNode::_create_tf_message_subscription(const std::string& topic) {
+    RerunLoggerNode::_create_tf_message_subscription(
+        const std::string& topic, const TopicOptions& topic_options
+    ) {
     std::string entity_path = _resolve_entity_path(topic);
     rclcpp::SubscriptionOptions subscription_options;
     subscription_options.callback_group = _parallel_callback_group;
@@ -360,7 +403,9 @@ std::shared_ptr<rclcpp::Subscription<tf2_msgs::msg::TFMessage>>
 }
 
 std::shared_ptr<rclcpp::Subscription<nav_msgs::msg::Odometry>>
-    RerunLoggerNode::_create_odometry_subscription(const std::string& topic) {
+    RerunLoggerNode::_create_odometry_subscription(
+        const std::string& topic, const TopicOptions& topic_options
+    ) {
     std::string entity_path = _resolve_entity_path(topic);
     rclcpp::SubscriptionOptions subscription_options;
     subscription_options.callback_group = _parallel_callback_group;
@@ -376,7 +421,9 @@ std::shared_ptr<rclcpp::Subscription<nav_msgs::msg::Odometry>>
 }
 
 std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::CameraInfo>>
-    RerunLoggerNode::_create_camera_info_subscription(const std::string& topic) {
+    RerunLoggerNode::_create_camera_info_subscription(
+        const std::string& topic, const TopicOptions& topic_options
+    ) {
     std::string entity_path = _resolve_entity_path(topic);
     rclcpp::SubscriptionOptions subscription_options;
     subscription_options.callback_group = _parallel_callback_group;
