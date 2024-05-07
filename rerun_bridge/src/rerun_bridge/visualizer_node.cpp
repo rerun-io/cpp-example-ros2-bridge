@@ -43,7 +43,7 @@ RerunLoggerNode::RerunLoggerNode() : Node("rerun_logger_node") {
     _rec.spawn().exit_on_failure();
 
     _parallel_callback_group =
-        this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+        this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
 
     _tf_buffer = std::make_unique<tf2_ros::Buffer>(this->get_clock());
     _tf_listener = std::make_unique<tf2_ros::TransformListener>(*_tf_buffer);
@@ -162,15 +162,17 @@ void RerunLoggerNode::_read_yaml_config(std::string yaml_path) {
         if (config["urdf"]["entity_path"]) {
             urdf_entity_path = config["urdf"]["entity_path"].as<std::string>();
         }
-        if (config["urdf"]["file_path"] && config["urdf"]["file_path"].size()) {
+        if (config["urdf"]["file_path"]) {
             std::string urdf_file_path =
                 resolve_ros_path(config["urdf"]["file_path"].as<std::string>());
-            RCLCPP_INFO(
-                this->get_logger(),
-                "Logging URDF from file path %s",
-                urdf_file_path.c_str()
-            );
-            _rec.log_file_from_path(urdf_file_path, urdf_entity_path, true);
+            if (urdf_file_path.size()) {
+                RCLCPP_INFO(
+                    this->get_logger(),
+                    "Logging URDF from file path %s",
+                    urdf_file_path.c_str()
+                );
+                _rec.log_file_from_path(urdf_file_path, urdf_entity_path, true);
+            }
         }
     }
 }

@@ -1,5 +1,5 @@
 <launch>
-  <executable cmd="ros2 bag play --clock 200 -r 0.1 $(find-pkg-share rerun_bridge)/go2_ros2" />
+  <executable cmd="ros2 bag play --clock 200 -r 1 $(find-pkg-share rerun_bridge)/go2_ros2" />
 
   <!-- Run the Rerun bridge node -->
   <node name="rerun_bridge_node" pkg="rerun_bridge" exec="visualizer">
