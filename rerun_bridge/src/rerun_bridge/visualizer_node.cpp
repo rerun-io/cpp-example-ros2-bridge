@@ -199,8 +199,6 @@ void RerunLoggerNode::_add_tf_tree(
 }
 
 void RerunLoggerNode::_create_subscriptions() {
-    RCLCPP_INFO(this->get_logger(), "Creating subscriptions");
-
     for (const auto& [topic_name, topic_types] : this->get_topic_names_and_types()) {
         // already subscribed to this topic?
         if (_topic_to_subscription.find(topic_name) != _topic_to_subscription.end()) {

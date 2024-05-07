@@ -8,7 +8,7 @@
 
     This allows for non-real-time simulation and real-time playback of the bag file.
   -->
-  <executable cmd="ros2 bag play -r 0.2 $(find-pkg-share rerun_bridge)/carla_ros2" />
+  <executable cmd="ros2 bag play $(find-pkg-share rerun_bridge)/carla_ros2" />
 
   <!-- Run the Rerun bridge node -->
   <node name="rerun_bridge_node" pkg="rerun_bridge" exec="visualizer">
