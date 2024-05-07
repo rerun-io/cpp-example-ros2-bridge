@@ -42,5 +42,5 @@ tf:
           radar: null
 topic_options: {}
 urdf:
-  file_path: ""
-  entity_path: "odom"
+  file_path: "package://go2_robot_sdk/urdf/go2.urdf"
+  entity_path: "/"  # the root of this urdf is map
