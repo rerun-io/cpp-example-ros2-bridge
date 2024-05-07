@@ -48,6 +48,8 @@ RerunLoggerNode::RerunLoggerNode() : Node("rerun_logger_node") {
     _tf_buffer = std::make_unique<tf2_ros::Buffer>(this->get_clock());
     _tf_listener = std::make_unique<tf2_ros::TransformListener>(*_tf_buffer);
 
+    _last_tf_update_time = this->get_clock()->now();
+
     // Read additional config from yaml file
     // NOTE We're not using the ROS parameter server for this, because roscpp doesn't support
     //   reading nested data structures.
@@ -233,8 +235,6 @@ void RerunLoggerNode::_create_subscriptions() {
 }
 
 void RerunLoggerNode::_update_tf() {
-    RCLCPP_INFO(this->get_logger(), "Update TF transforms");
-
     // NOTE We log the interpolated transforms with an offset assuming the whole tree has
     //  been updated after this offset. This is not an ideal solution. If a frame is updated
     //  with a delay longer than this offset we will never log interpolated transforms for it.
@@ -244,6 +244,13 @@ void RerunLoggerNode::_update_tf() {
     //  out of order (maybe this is not a problem in practice?).
 
     auto now = this->get_clock()->now();
+
+    // If no time has passed since the last update, don't do anything
+    // This can happen when using simulation time that does not keep going at the end
+    if (now - _last_tf_update_time == 0s) {
+        return;
+    }
+
     for (const auto& [frame, entity_path] : _tf_frame_to_entity_path) {
         auto parent = _tf_frame_to_parent.find(frame);
         if (parent == _tf_frame_to_parent.end() or parent->second.empty()) {
@@ -253,6 +260,7 @@ void RerunLoggerNode::_update_tf() {
             auto transform =
                 _tf_buffer->lookupTransform(parent->second, frame, now - rclcpp::Duration(1, 0));
             log_transform(_rec, entity_path, transform);
+            _last_tf_update_time = now;
         } catch (tf2::TransformException& ex) {
             RCLCPP_WARN_THROTTLE(
                 this->get_logger(),
