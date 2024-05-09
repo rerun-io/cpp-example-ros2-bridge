@@ -63,8 +63,7 @@ constexpr float TurboBytes[256][3] = {
     {169, 22, 1},    {167, 20, 1},    {164, 19, 1},   {161, 18, 1},   {158, 16, 1},
     {155, 15, 1},    {152, 14, 1},    {149, 13, 1},   {146, 11, 1},   {142, 10, 1},
     {139, 9, 2},     {136, 8, 2},     {133, 7, 2},    {129, 6, 2},    {126, 5, 2},
-    {122, 4, 3}
-};
+    {122, 4, 3}};
 
 std::vector<rerun::Color> colormap(
     const std::vector<float>& values, std::optional<float> min_value, std::optional<float> max_value

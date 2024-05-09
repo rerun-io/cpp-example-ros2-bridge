@@ -118,8 +118,7 @@ void RerunLoggerNode::_read_yaml_config(std::string yaml_path) {
             const std::array<float, 3> translation = {
                 extra_transform3d["transform"][3].as<float>(),
                 extra_transform3d["transform"][7].as<float>(),
-                extra_transform3d["transform"][11].as<float>()
-            };
+                extra_transform3d["transform"][11].as<float>()};
             // Rerun uses column-major order for Mat3x3
             const std::array<float, 9> mat3x3 = {
                 extra_transform3d["transform"][0].as<float>(),
@@ -130,8 +129,7 @@ void RerunLoggerNode::_read_yaml_config(std::string yaml_path) {
                 extra_transform3d["transform"][9].as<float>(),
                 extra_transform3d["transform"][2].as<float>(),
                 extra_transform3d["transform"][6].as<float>(),
-                extra_transform3d["transform"][10].as<float>()
-            };
+                extra_transform3d["transform"][10].as<float>()};
             _rec.log_timeless(
                 extra_transform3d["entity_path"].as<std::string>(),
                 rerun::Transform3D(
