@@ -40,7 +40,10 @@ tf:
           base_footprint: null
           imu: null
           radar: null
-topic_options: {}
+topic_options:
+  /point_cloud2:
+    colormap: turbo
+    colormap_field: z
 urdf:
   file_path: "package://go2_robot_sdk/urdf/go2.urdf"
   entity_path: "/"  # the root of this urdf is map

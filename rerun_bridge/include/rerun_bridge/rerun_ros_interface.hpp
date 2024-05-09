@@ -56,10 +56,10 @@ void log_transform(
 );
 
 struct PointCloud2Options {
-    std::optional<std::string> color_map;
-    std::optional<std::string> color_map_field;
-    std::optional<float> color_map_min;
-    std::optional<float> color_map_max;
+    std::optional<std::string> colormap;
+    std::optional<std::string> colormap_field;
+    std::optional<float> colormap_min;
+    std::optional<float> colormap_max;
 };
 
 void log_point_cloud2(

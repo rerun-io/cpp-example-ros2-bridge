@@ -501,20 +501,20 @@ namespace YAML {
                 return false;
             }
 
-            if (node["color_map"]) {
-                rhs.color_map = node["color_map"].as<std::string>();
+            if (node["colormap"]) {
+                rhs.colormap = node["colormap"].as<std::string>();
                 ++total;
             }
-            if (node["color_map_field"]) {
-                rhs.color_map_field = node["color_map_field"].as<std::string>();
+            if (node["colormap_field"]) {
+                rhs.colormap_field = node["colormap_field"].as<std::string>();
                 ++total;
             }
-            if (node["color_map_min"]) {
-                rhs.color_map_min = node["color_map_min"].as<float>();
+            if (node["colormap_min"]) {
+                rhs.colormap_min = node["colormap_min"].as<float>();
                 ++total;
             }
-            if (node["color_map_max"]) {
-                rhs.color_map_max = node["color_map_max"].as<float>();
+            if (node["colormap_max"]) {
+                rhs.colormap_max = node["colormap_max"].as<float>();
                 ++total;
             }
 
