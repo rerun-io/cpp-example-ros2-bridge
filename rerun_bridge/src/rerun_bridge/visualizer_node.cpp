@@ -42,8 +42,7 @@ std::string resolve_ros_path(const std::string& path) {
 RerunLoggerNode::RerunLoggerNode() : Node("rerun_logger_node") {
     _rec.spawn().exit_on_failure();
 
-    _parallel_callback_group =
-        this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+    _parallel_callback_group = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
 
     _tf_buffer = std::make_unique<tf2_ros::Buffer>(this->get_clock());
     _tf_listener = std::make_unique<tf2_ros::TransformListener>(*_tf_buffer);
@@ -119,7 +118,8 @@ void RerunLoggerNode::_read_yaml_config(std::string yaml_path) {
             const std::array<float, 3> translation = {
                 extra_transform3d["transform"][3].as<float>(),
                 extra_transform3d["transform"][7].as<float>(),
-                extra_transform3d["transform"][11].as<float>()};
+                extra_transform3d["transform"][11].as<float>()
+            };
             // Rerun uses column-major order for Mat3x3
             const std::array<float, 9> mat3x3 = {
                 extra_transform3d["transform"][0].as<float>(),
@@ -130,7 +130,8 @@ void RerunLoggerNode::_read_yaml_config(std::string yaml_path) {
                 extra_transform3d["transform"][9].as<float>(),
                 extra_transform3d["transform"][2].as<float>(),
                 extra_transform3d["transform"][6].as<float>(),
-                extra_transform3d["transform"][10].as<float>()};
+                extra_transform3d["transform"][10].as<float>()
+            };
             _rec.log_timeless(
                 extra_transform3d["entity_path"].as<std::string>(),
                 rerun::Transform3D(
@@ -230,6 +231,8 @@ void RerunLoggerNode::_create_subscriptions() {
             _topic_to_subscription[topic_name] = _create_odometry_subscription(topic_name);
         } else if (topic_type == "sensor_msgs/msg/CameraInfo") {
             _topic_to_subscription[topic_name] = _create_camera_info_subscription(topic_name);
+        } else if (topic_type == "sensor_msgs/msg/PointCloud2") {
+            _topic_to_subscription[topic_name] = _create_point_cloud2_subscription(topic_name);
         }
     }
 }
@@ -257,8 +260,9 @@ void RerunLoggerNode::_update_tf() {
             continue;
         }
         try {
-            auto transform =
-                _tf_buffer->lookupTransform(parent->second, frame, now - rclcpp::Duration(1, 0));
+            auto transform = std::make_shared<geometry_msgs::msg::TransformStamped>(
+                _tf_buffer->lookupTransform(parent->second, frame, now - rclcpp::Duration(1, 0))
+            );
             log_transform(_rec, entity_path, transform);
             _last_tf_update_time = now;
         } catch (tf2::TransformException& ex) {
@@ -277,10 +281,10 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Image>>
     RerunLoggerNode::_create_image_subscription(const std::string& topic) {
     std::string entity_path = _resolve_entity_path(topic);
     bool lookup_transform = (_topic_to_entity_path.find(topic) == _topic_to_entity_path.end());
-    ImageOptions image_options;
+    ImageOptions options;
 
     if (_topic_options.find(topic) != _topic_options.end()) {
-        image_options = _topic_options.at(topic).as<ImageOptions>();
+        options = _topic_options.at(topic).as<ImageOptions>();
     }
 
     rclcpp::SubscriptionOptions subscription_options;
@@ -288,7 +292,7 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Image>>
 
     RCLCPP_INFO(
         this->get_logger(),
-        "Subscribing to image topic %s, logging to entity path %s",
+        "Subscribing to Image topic %s, logging to entity path %s",
         topic.c_str(),
         entity_path.c_str()
     );
@@ -296,23 +300,25 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Image>>
     return this->create_subscription<sensor_msgs::msg::Image>(
         topic,
         1000,
-        [&, entity_path, lookup_transform, image_options](
+        [&, entity_path, lookup_transform, options](
             const sensor_msgs::msg::Image::SharedPtr msg
         ) {
             if (!_root_frame.empty() && lookup_transform) {
                 try {
-                    auto transform = _tf_buffer->lookupTransform(
-                        _root_frame,
-                        msg->header.frame_id,
-                        msg->header.stamp,
-                        100ms
+                    auto transform = std::make_shared<geometry_msgs::msg::TransformStamped>(
+                        _tf_buffer->lookupTransform(
+                            _root_frame,
+                            msg->header.frame_id,
+                            msg->header.stamp,
+                            100ms
+                        )
                     );
                     log_transform(_rec, parent_entity_path(entity_path), transform);
                 } catch (tf2::TransformException& ex) {
                     RCLCPP_WARN(this->get_logger(), "%s", ex.what());
                 }
             }
-            log_image(_rec, entity_path, msg, image_options);
+            log_image(_rec, entity_path, msg, options);
         },
         subscription_options
     );
@@ -405,6 +411,60 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::CameraInfo>>
     );
 }
 
+std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::PointCloud2>>
+    RerunLoggerNode::_create_point_cloud2_subscription(const std::string& topic) {
+    std::string entity_path = _resolve_entity_path(topic);
+    bool lookup_transform = (_topic_to_entity_path.find(topic) == _topic_to_entity_path.end());
+    bool restamp_msgs = true;  // TODO make this configurable and applicable to all types
+    PointCloud2Options options;
+
+    if (_topic_options.find(topic) != _topic_options.end()) {
+        options = _topic_options.at(topic).as<PointCloud2Options>();
+    }
+
+    rclcpp::SubscriptionOptions subscription_options;
+    subscription_options.callback_group = _parallel_callback_group;
+
+    RCLCPP_INFO(
+        this->get_logger(),
+        "Subscribing to PointCloud2 topic %s, logging to entity path %s",
+        topic.c_str(),
+        entity_path.c_str()
+    );
+
+    return this->create_subscription<sensor_msgs::msg::PointCloud2>(
+        topic,
+        1000,
+        [&, entity_path, lookup_transform, options, restamp_msgs](
+            const sensor_msgs::msg::PointCloud2::SharedPtr msg
+        ) {
+            if(restamp_msgs) {
+                auto now = this->get_clock()->now();
+                msg->header.stamp = now;
+            }
+
+            if (!_root_frame.empty() && lookup_transform) {
+                try {
+                    auto transform = std::make_shared<geometry_msgs::msg::TransformStamped>(
+                        _tf_buffer->lookupTransform(
+                            _root_frame,
+                            msg->header.frame_id,
+                            msg->header.stamp,
+                            100ms
+                        )
+                    );
+                    log_transform(_rec, parent_entity_path(entity_path), transform);
+                } catch (tf2::TransformException& ex) {
+                    RCLCPP_WARN(this->get_logger(), "%s", ex.what());
+                }
+            }
+
+            log_point_cloud2(_rec, entity_path, msg, options);
+        },
+        subscription_options
+    );
+}
+
 namespace YAML {
     template <>
     struct convert<ImageOptions> {
@@ -421,6 +481,40 @@ namespace YAML {
             }
             if (node["max_depth"]) {
                 rhs.max_depth = node["max_depth"].as<float>();
+                ++total;
+            }
+
+            if (total != node.size()) {
+                return false;
+            }
+
+            return true;
+        }
+    };
+
+    template <>
+    struct convert<PointCloud2Options> {
+        static bool decode(const Node& node, PointCloud2Options& rhs) {
+            int total = 0;
+
+            if (!node.IsMap()) {
+                return false;
+            }
+
+            if (node["color_map"]) {
+                rhs.color_map = node["color_map"].as<std::string>();
+                ++total;
+            }
+            if (node["color_map_field"]) {
+                rhs.color_map_field = node["color_map_field"].as<std::string>();
+                ++total;
+            }
+            if (node["color_map_min"]) {
+                rhs.color_map_min = node["color_map_min"].as<float>();
+                ++total;
+            }
+            if (node["color_map_max"]) {
+                rhs.color_map_max = node["color_map_max"].as<float>();
                 ++total;
             }
 

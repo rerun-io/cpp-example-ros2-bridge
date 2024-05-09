@@ -186,27 +186,71 @@ void log_camera_info(
 
 void log_transform(
     const rerun::RecordingStream& rec, const std::string& entity_path,
-    const geometry_msgs::msg::TransformStamped& msg
+    const geometry_msgs::msg::TransformStamped::ConstSharedPtr& msg
 ) {
     rec.set_time_seconds(
         "timestamp",
-        rclcpp::Time(msg.header.stamp.sec, msg.header.stamp.nanosec).seconds()
+        rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
     );
 
     rec.log(
         entity_path,
         rerun::Transform3D(
             rerun::Vector3D(
-                msg.transform.translation.x,
-                msg.transform.translation.y,
-                msg.transform.translation.z
+                msg->transform.translation.x,
+                msg->transform.translation.y,
+                msg->transform.translation.z
             ),
             rerun::Quaternion::from_wxyz(
-                msg.transform.rotation.w,
-                msg.transform.rotation.x,
-                msg.transform.rotation.y,
-                msg.transform.rotation.z
+                msg->transform.rotation.w,
+                msg->transform.rotation.x,
+                msg->transform.rotation.y,
+                msg->transform.rotation.z
             )
         )
     );
+}
+
+void log_point_cloud2(
+    const rerun::RecordingStream& rec, const std::string& entity_path,
+    const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg, const PointCloud2Options& options
+) {
+    rec.set_time_seconds(
+        "timestamp",
+        rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
+    );
+
+    // TODO(leo) should match the behavior described here
+    // https://wiki.ros.org/rviz/DisplayTypes/PointCloud
+    // TODO(leo) if not specified, check if 2D points or 3D points
+    // TODO(leo) allow arbitrary color mapping
+
+    size_t x_offset, y_offset, z_offset;
+    const auto bytes = msg->data;
+
+    for (const auto& field : msg->fields) {
+        if (field.name == "x") {
+            x_offset = field.offset;
+        } else if (field.name == "y") {
+            y_offset = field.offset;
+        } else if (field.name == "z") {
+            z_offset = field.offset;
+        }
+    }
+
+    std::vector<rerun::Position3D> points(msg->width * msg->height);
+
+    for (size_t i = 0; i < msg->height; ++i) {
+        for (size_t j = 0; j < msg->width; ++j) {
+            auto point_offset = i * msg->row_step + j * msg->point_step;
+            rerun::Position3D position;
+            // TODO(leo) if xyz are consecutive fields we can do this in a single memcpy
+            std::memcpy(&position.xyz.xyz[0], &bytes[point_offset + x_offset], sizeof(float));
+            std::memcpy(&position.xyz.xyz[1], &bytes[point_offset + y_offset], sizeof(float));
+            std::memcpy(&position.xyz.xyz[2], &bytes[point_offset + z_offset], sizeof(float));
+            points.emplace_back(std::move(position));
+        }
+    }
+
+    rec.log(entity_path, rerun::Points3D(points));
 }
