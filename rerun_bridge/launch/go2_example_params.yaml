@@ -1,6 +1,11 @@
-topic_to_entity_path: {}
+topic_to_entity_path:
+  /go2_camera/color/image: /map/odom/base_link/Head_upper/front_camera/image
 extra_transform3ds: []
-extra_pinholes: []
+extra_pinholes:
+  - entity_path: /map/odom/base_link/Head_upper/front_camera/image
+    height: 720
+    width: 1280
+    image_from_camera: [1200, 0, 640, 0, 1200, 360, 0, 0, 1]
 tf:
   update_rate: 50.0  # set to 0 to log raw tf data only (i.e., without interoplation)
 

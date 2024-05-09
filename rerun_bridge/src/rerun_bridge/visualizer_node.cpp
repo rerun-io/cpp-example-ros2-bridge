@@ -142,6 +142,30 @@ void RerunLoggerNode::_read_yaml_config(std::string yaml_path) {
             );
         }
     }
+    if (config["extra_pinholes"]) {
+        for (const auto& extra_pinhole : config["extra_pinholes"]) {
+            // Rerun uses column-major order for Mat3x3
+            const std::array<float, 9> image_from_camera = {
+                extra_pinhole["image_from_camera"][0].as<float>(),
+                extra_pinhole["image_from_camera"][3].as<float>(),
+                extra_pinhole["image_from_camera"][6].as<float>(),
+                extra_pinhole["image_from_camera"][1].as<float>(),
+                extra_pinhole["image_from_camera"][4].as<float>(),
+                extra_pinhole["image_from_camera"][7].as<float>(),
+                extra_pinhole["image_from_camera"][2].as<float>(),
+                extra_pinhole["image_from_camera"][5].as<float>(),
+                extra_pinhole["image_from_camera"][8].as<float>(),
+            };
+            _rec.log_timeless(
+                extra_pinhole["entity_path"].as<std::string>(),
+                rerun::Pinhole(image_from_camera)
+                    .with_resolution(
+                        extra_pinhole["width"].as<int>(),
+                        extra_pinhole["height"].as<int>()
+                    )
+            );
+        }
+    }
     if (config["tf"]) {
         if (config["tf"]["update_rate"]) {
             _tf_fixed_rate = config["tf"]["update_rate"].as<float>();
@@ -300,9 +324,7 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Image>>
     return this->create_subscription<sensor_msgs::msg::Image>(
         topic,
         1000,
-        [&, entity_path, lookup_transform, options](
-            const sensor_msgs::msg::Image::SharedPtr msg
-        ) {
+        [&, entity_path, lookup_transform, options](const sensor_msgs::msg::Image::SharedPtr msg) {
             if (!_root_frame.empty() && lookup_transform) {
                 try {
                     auto transform = std::make_shared<geometry_msgs::msg::TransformStamped>(
@@ -415,7 +437,7 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::PointCloud2>>
     RerunLoggerNode::_create_point_cloud2_subscription(const std::string& topic) {
     std::string entity_path = _resolve_entity_path(topic);
     bool lookup_transform = (_topic_to_entity_path.find(topic) == _topic_to_entity_path.end());
-    bool restamp_msgs = true;  // TODO make this configurable and applicable to all types
+    bool restamp_msgs = true; // TODO make this configurable and applicable to all types
     PointCloud2Options options;
 
     if (_topic_options.find(topic) != _topic_options.end()) {
@@ -438,7 +460,7 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::PointCloud2>>
         [&, entity_path, lookup_transform, options, restamp_msgs](
             const sensor_msgs::msg::PointCloud2::SharedPtr msg
         ) {
-            if(restamp_msgs) {
+            if (restamp_msgs) {
                 auto now = this->get_clock()->now();
                 msg->header.stamp = now;
             }
