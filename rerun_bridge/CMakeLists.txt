@@ -6,8 +6,8 @@ if(NOT DEFINED CMAKE_CXX_STANDARD)
 endif()
 
 # Avoid warning about CMP0135
-if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
-    cmake_policy(SET CMP0135 NEW)
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
+  cmake_policy(SET CMP0135 NEW)
 endif()
 
 find_package(ament_cmake REQUIRED)
@@ -22,7 +22,7 @@ find_package(OpenCV REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
 include(FetchContent)
-FetchContent_Declare(rerun_sdk URL https://github.com/rerun-io/rerun/releases/download/0.15.1/rerun_cpp_sdk.zip)
+FetchContent_Declare(rerun_sdk URL https://build.rerun.io/commit/359c2cd/rerun_cpp_sdk.zip)
 FetchContent_MakeAvailable(rerun_sdk)
 
 # setup targets (has to be done before ament_package call)
@@ -44,7 +44,6 @@ ament_export_dependencies(rclcpp sensor_msgs nav_msgs geometry_msgs cv_bridge tf
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
 ament_package()
-
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 install(TARGETS visualizer DESTINATION lib/${PROJECT_NAME})
