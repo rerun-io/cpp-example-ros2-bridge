@@ -9,6 +9,7 @@
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
 #include <tf2_msgs/msg/tf_message.hpp>
 
 #include <rerun.hpp>
@@ -51,5 +52,17 @@ void log_tf_message(
 
 void log_transform(
     const rerun::RecordingStream& rec, const std::string& entity_path,
-    const geometry_msgs::msg::TransformStamped& msg
+    const geometry_msgs::msg::TransformStamped::ConstSharedPtr& msg
+);
+
+struct PointCloud2Options {
+    std::optional<std::string> colormap;
+    std::optional<std::string> colormap_field;
+    std::optional<float> colormap_min;
+    std::optional<float> colormap_max;
+};
+
+void log_point_cloud2(
+    const rerun::RecordingStream& rec, const std::string& entity_path,
+    const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg, const PointCloud2Options& options
 );

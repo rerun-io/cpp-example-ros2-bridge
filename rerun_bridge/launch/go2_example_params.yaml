@@ -1,0 +1,55 @@
+extra_transform3ds: []
+extra_pinholes:
+  - entity_path: /map/odom/base_link/Head_upper/front_camera/image
+    height: 720
+    width: 1280
+    image_from_camera: [1200, 0, 640, 0, 1200, 360, 0, 0, 1]
+tf:
+  update_rate: 50.0  # set to 0 to log raw tf data only (i.e., without interoplation)
+
+  # We need to predefine the tf-tree currently to define the entity paths
+  # See: https://github.com/rerun-io/rerun/issues/5242
+  tree:
+    map:
+      odom:
+        base_link:
+          FL_hip:
+            FL_thigh:
+              FL_calf:
+                FL_calflower:
+                  FL_calflower1: null
+                FL_foot: null
+          FR_hip:
+            FR_thigh:
+              FR_calf:
+                FR_calflower:
+                  FR_calflower1: null
+                FR_foot: null
+          RL_hip:
+            RL_thigh:
+              RL_calf:
+                RL_calflower:
+                  RL_calflower1: null
+                RL_foot: null
+          RR_hip:
+            RR_thigh:
+              RR_calf:
+                RR_calflower:
+                  RR_calflower1: null
+                RR_foot: null
+          Head_upper:
+            front_camera: null
+            Head_lower: null
+          base_footprint: null
+          imu: null
+          radar: null
+topic_options:
+  /point_cloud2:
+    colormap: turbo
+    colormap_field: z
+    restamp: true
+  /go2_camera/color/image: 
+    entity_path: /map/odom/base_link/Head_upper/front_camera/image
+urdf:
+  file_path: "package://go2_robot_sdk/urdf/go2.urdf"
+  entity_path: "/"  # the root of this urdf is map
