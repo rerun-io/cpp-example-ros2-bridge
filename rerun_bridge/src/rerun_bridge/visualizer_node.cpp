@@ -496,7 +496,7 @@ namespace YAML {
             }
 
             if (node["min_depth"]) {
-                rhs.min_depth = node["max_depth"].as<float>();
+                rhs.min_depth = node["min_depth"].as<float>();
                 ++total;
             }
             if (node["max_depth"]) {
