@@ -35,3 +35,6 @@ Prior to opening a pull request, run `pixi run lint-typos && pixi run cpp-fmt` t
 
 You can update this repository with the latest changes from the [template](https://github.com/rerun-io/rerun_template/) by running:
 * `scripts/template_update.py update --languages cpp`
+
+## Acknowledgements
+This code uses the [turbo colormap lookup table](https://gist.github.com/mikhailov-work/6a308c20e494d9e0ccc29036b28faa7a) by [Anton Mikhailov](https://github.com/mikhailov-work).
