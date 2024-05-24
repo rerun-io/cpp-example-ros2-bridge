@@ -57,6 +57,11 @@ class RerunLoggerNode : public rclcpp::Node {
     void _create_subscriptions();
     void _update_tf();
 
+    void _handle_msg_header(
+        bool restamp, bool lookup_transform, const std::string& entity_path,
+        std_msgs::msg::Header& header
+    );
+
     /* Message specific subscriber factory functions */
     std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Image>> _create_image_subscription(
         const std::string& topic, const TopicOptions& topic_options

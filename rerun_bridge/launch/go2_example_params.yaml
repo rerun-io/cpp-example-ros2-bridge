@@ -47,6 +47,7 @@ topic_options:
   /point_cloud2:
     colormap: turbo
     colormap_field: z
+    restamp: true
   /go2_camera/color/image: 
     entity_path: /map/odom/base_link/Head_upper/front_camera/image
 urdf:

@@ -366,6 +366,11 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Image>>
     ) {
     std::string entity_path = _resolve_entity_path(topic, topic_options);
     bool lookup_transform = (topic_options.find("entity_path") == topic_options.end());
+    bool restamp = false;
+    if (topic_options.find("restamp") != topic_options.end()) {
+        restamp = topic_options.at("restamp").as<bool>();
+    }
+
     auto image_options = image_options_from_topic_options(topic_options);
 
     rclcpp::SubscriptionOptions subscription_options;
@@ -381,24 +386,10 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Image>>
     return this->create_subscription<sensor_msgs::msg::Image>(
         topic,
         1000,
-        [&, entity_path, lookup_transform, image_options](
+        [&, entity_path, lookup_transform, restamp, image_options](
             const sensor_msgs::msg::Image::SharedPtr msg
         ) {
-            if (!_root_frame.empty() && lookup_transform) {
-                try {
-                    auto transform = std::make_shared<geometry_msgs::msg::TransformStamped>(
-                        _tf_buffer->lookupTransform(
-                            _root_frame,
-                            msg->header.frame_id,
-                            msg->header.stamp,
-                            100ms
-                        )
-                    );
-                    log_transform(_rec, parent_entity_path(entity_path), transform);
-                } catch (tf2::TransformException& ex) {
-                    RCLCPP_WARN(this->get_logger(), "%s", ex.what());
-                }
-            }
+            _handle_msg_header(restamp, lookup_transform, parent_entity_path(entity_path), msg->header);
             log_image(_rec, entity_path, msg, image_options);
         },
         subscription_options
@@ -410,13 +401,19 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Imu>>
         const std::string& topic, const TopicOptions& topic_options
     ) {
     std::string entity_path = _resolve_entity_path(topic, topic_options);
+    bool restamp = false;
+    if (topic_options.find("restamp") != topic_options.end()) {
+        restamp = topic_options.at("restamp").as<bool>();
+    }
+
     rclcpp::SubscriptionOptions subscription_options;
     subscription_options.callback_group = _parallel_callback_group;
 
     return this->create_subscription<sensor_msgs::msg::Imu>(
         topic,
         1000,
-        [&, entity_path](const sensor_msgs::msg::Imu::SharedPtr msg) {
+        [&, entity_path, restamp](const sensor_msgs::msg::Imu::SharedPtr msg) {
+            _handle_msg_header(restamp, false, entity_path, msg->header);
             log_imu(_rec, entity_path, msg);
         },
         subscription_options
@@ -428,13 +425,22 @@ std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::PoseStamped>>
         const std::string& topic, const TopicOptions& topic_options
     ) {
     std::string entity_path = _resolve_entity_path(topic, topic_options);
+    bool lookup_transform = (topic_options.find("entity_path") == topic_options.end());
+    bool restamp = false;
+    if (topic_options.find("restamp") != topic_options.end()) {
+        restamp = topic_options.at("restamp").as<bool>();
+    }
+
     rclcpp::SubscriptionOptions subscription_options;
     subscription_options.callback_group = _parallel_callback_group;
 
     return this->create_subscription<geometry_msgs::msg::PoseStamped>(
         topic,
         1000,
-        [&, entity_path](const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
+        [&, entity_path, lookup_transform, restamp](
+            const geometry_msgs::msg::PoseStamped::SharedPtr msg
+        ) {
+            _handle_msg_header(restamp, lookup_transform, entity_path, msg->header);
             log_pose_stamped(_rec, entity_path, msg);
         },
         subscription_options
@@ -446,6 +452,7 @@ std::shared_ptr<rclcpp::Subscription<tf2_msgs::msg::TFMessage>>
         const std::string& topic, const TopicOptions& topic_options
     ) {
     std::string entity_path = _resolve_entity_path(topic, topic_options);
+
     rclcpp::SubscriptionOptions subscription_options;
     subscription_options.callback_group = _parallel_callback_group;
 
@@ -464,13 +471,20 @@ std::shared_ptr<rclcpp::Subscription<nav_msgs::msg::Odometry>>
         const std::string& topic, const TopicOptions& topic_options
     ) {
     std::string entity_path = _resolve_entity_path(topic, topic_options);
+    bool lookup_transform = (topic_options.find("entity_path") == topic_options.end());
+    bool restamp = false;
+    if (topic_options.find("restamp") != topic_options.end()) {
+        restamp = topic_options.at("restamp").as<bool>();
+    }
+
     rclcpp::SubscriptionOptions subscription_options;
     subscription_options.callback_group = _parallel_callback_group;
 
     return this->create_subscription<nav_msgs::msg::Odometry>(
         topic,
         1000,
-        [&, entity_path](const nav_msgs::msg::Odometry::SharedPtr msg) {
+        [&, entity_path, lookup_transform, restamp](const nav_msgs::msg::Odometry::SharedPtr msg) {
+            _handle_msg_header(restamp, lookup_transform, entity_path, msg->header);
             log_odometry(_rec, entity_path, msg);
         },
         subscription_options
@@ -482,6 +496,11 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::CameraInfo>>
         const std::string& topic, const TopicOptions& topic_options
     ) {
     std::string entity_path = _resolve_entity_path(topic, topic_options);
+    bool restamp = false;
+    if (topic_options.find("restamp") != topic_options.end()) {
+        restamp = topic_options.at("restamp").as<bool>();
+    }
+
     rclcpp::SubscriptionOptions subscription_options;
     subscription_options.callback_group = _parallel_callback_group;
 
@@ -495,7 +514,8 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::CameraInfo>>
     return this->create_subscription<sensor_msgs::msg::CameraInfo>(
         topic,
         1,
-        [&, entity_path](const sensor_msgs::msg::CameraInfo::SharedPtr msg) {
+        [&, entity_path, restamp](const sensor_msgs::msg::CameraInfo::SharedPtr msg) {
+            _handle_msg_header(restamp, false, entity_path, msg->header);
             log_camera_info(_rec, entity_path, msg);
         },
         subscription_options
@@ -508,7 +528,10 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::PointCloud2>>
     ) {
     std::string entity_path = _resolve_entity_path(topic, topic_options);
     bool lookup_transform = (topic_options.find("entity_path") == topic_options.end());
-    bool restamp_msgs = true; // TODO make this configurable and applicable to all types
+    bool restamp = false;
+    if (topic_options.find("restamp") != topic_options.end()) {
+        restamp = topic_options.at("restamp").as<bool>();
+    }
     auto point_cloud2_options = point_cloud2_options_from_topic_options(topic_options);
 
     rclcpp::SubscriptionOptions subscription_options;
@@ -524,34 +547,34 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::PointCloud2>>
     return this->create_subscription<sensor_msgs::msg::PointCloud2>(
         topic,
         1000,
-        [&, entity_path, lookup_transform, point_cloud2_options, restamp_msgs](
+        [&, entity_path, lookup_transform, restamp, point_cloud2_options](
             const sensor_msgs::msg::PointCloud2::SharedPtr msg
         ) {
-            if (restamp_msgs) {
-                auto now = this->get_clock()->now();
-                msg->header.stamp = now;
-            }
-
-            if (!_root_frame.empty() && lookup_transform) {
-                try {
-                    auto transform = std::make_shared<geometry_msgs::msg::TransformStamped>(
-                        _tf_buffer->lookupTransform(
-                            _root_frame,
-                            msg->header.frame_id,
-                            msg->header.stamp,
-                            100ms
-                        )
-                    );
-                    log_transform(_rec, entity_path, transform);
-                } catch (tf2::TransformException& ex) {
-                    RCLCPP_WARN(this->get_logger(), "%s", ex.what());
-                }
-            }
-
+            _handle_msg_header(restamp, lookup_transform, entity_path, msg->header);
             log_point_cloud2(_rec, entity_path, msg, point_cloud2_options);
         },
         subscription_options
     );
+}
+
+void RerunLoggerNode::_handle_msg_header(
+    bool restamp, bool lookup_transform, const std::string& entity_path,
+    std_msgs::msg::Header& header
+) {
+    if (restamp) {
+        auto now = this->get_clock()->now();
+        header.stamp = now;
+    }
+    if (!_root_frame.empty() && lookup_transform) {
+        try {
+            auto transform = std::make_shared<geometry_msgs::msg::TransformStamped>(
+                _tf_buffer->lookupTransform(_root_frame, header.frame_id, header.stamp, 100ms)
+            );
+            log_transform(_rec, entity_path, transform);
+        } catch (tf2::TransformException& ex) {
+            RCLCPP_WARN(this->get_logger(), "%s", ex.what());
+        }
+    }
 }
 
 int main(int argc, char** argv) {
