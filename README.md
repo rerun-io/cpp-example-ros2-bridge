@@ -4,7 +4,9 @@ This is an example that shows how to use Rerun's C++ API to log and visualize [R
 
 It works by subscribing to all topics with supported types, converting the messages, and logging the data to Rerun. It further allows to remap topic names to specific entity paths, specify additional timeless transforms, and pinhole parameters via an external config file. See the [launch](https://github.com/rerun-io/cpp-example-ros2-bridge/tree/main/rerun_bridge/launch) directory for usage examples.
 
-https://github.com/rerun-io/cpp-example-ros2-bridge/assets/9785832/bbb4675a-b606-4ff4-9e23-ded487020853
+| CARLA | Go2 |
+| --- | --- |
+| ![carla](https://github.com/rerun-io/cpp-example-ros2-bridge/assets/9785832/f4e91f4b-18b4-4890-b2cc-ff00880ca65c) | ![go2](https://github.com/rerun-io/cpp-example-ros2-bridge/assets/9785832/2856b5af-d02b-426b-8e23-2cf6f7c2bfd8) |
 
 This example is built for ROS 2. For more ROS examples, also check out the [ROS 2 example](https://www.rerun.io/docs/howto/ros2-nav-turtlebot), the [URDF data-loader](https://github.com/rerun-io/rerun-loader-python-example-urdf), and the [ROS 1 bridge](https://github.com/rerun-io/cpp-example-ros-bridge).
 
