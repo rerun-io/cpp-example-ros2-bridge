@@ -313,21 +313,21 @@ void log_point_cloud2(
     for (const auto& field : msg->fields) {
         if (field.name == "x") {
             x_offset = field.offset;
-            if(field.datatype != sensor_msgs::msg::PointField::FLOAT32) {
+            if (field.datatype != sensor_msgs::msg::PointField::FLOAT32) {
                 rec.log(entity_path, rerun::TextLog("Only FLOAT32 x field supported"));
                 return;
             }
             has_x = true;
         } else if (field.name == "y") {
             y_offset = field.offset;
-            if(field.datatype != sensor_msgs::msg::PointField::FLOAT32) {
+            if (field.datatype != sensor_msgs::msg::PointField::FLOAT32) {
                 rec.log(entity_path, rerun::TextLog("Only FLOAT32 y field supported"));
                 return;
             }
             has_y = true;
         } else if (field.name == "z") {
             z_offset = field.offset;
-            if(field.datatype != sensor_msgs::msg::PointField::FLOAT32) {
+            if (field.datatype != sensor_msgs::msg::PointField::FLOAT32) {
                 rec.log(entity_path, rerun::TextLog("Only FLOAT32 z field supported"));
                 return;
             }
@@ -336,7 +336,10 @@ void log_point_cloud2(
     }
 
     if (!has_x || !has_y || !has_z) {
-        rec.log(entity_path, rerun::TextLog("Currently only PointCloud2 messages with x, y, z fields are supported"));
+        rec.log(
+            entity_path,
+            rerun::TextLog("Currently only PointCloud2 messages with x, y, z fields are supported")
+        );
         return;
     }
 
