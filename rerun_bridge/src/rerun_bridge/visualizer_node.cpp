@@ -179,7 +179,7 @@ void RerunLoggerNode::_read_yaml_config(std::string yaml_path) {
                 extra_transform3d["transform"][2].as<float>(),
                 extra_transform3d["transform"][6].as<float>(),
                 extra_transform3d["transform"][10].as<float>()};
-            _rec.log_timeless(
+            _rec.log_static(
                 extra_transform3d["entity_path"].as<std::string>(),
                 rerun::Transform3D(
                     rerun::Vec3D(translation),

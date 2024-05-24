@@ -71,7 +71,7 @@ cwd = "humble_ws"
 cmd = "curl -L -C - -O https://storage.googleapis.com/rerun-example-datasets/carla_ros2.zip && unzip carla_ros2.zip"
 cwd = "humble_ws/install/rerun_bridge/share/rerun_bridge"
 outputs = ["humble_ws/install/rerun_bridge/share/rerun_bridge/carla_ros2"]
-depends_on=["build"]
+depends_on = ["build"]
 
 [tasks.carla_example]
 cmd = "bash -c 'source ./install/local_setup.bash && ros2 launch rerun_bridge carla_example.launch'"
@@ -110,7 +110,7 @@ cwd = "humble_ws"
 #  https://github.com/prefix-dev/pixi/issues/1163
 
 [tasks.rerun_viewer]
-cmd = "pip install rerun-sdk==0.15"
+cmd = "pip install rerun-sdk==0.16"
 
 [tasks.rerun_urdf_loader]
 cmd = "pip install git+https://github.com/rerun-io/rerun-loader-python-example-urdf.git"
