@@ -116,6 +116,8 @@ cmd = "pip install rerun-sdk==0.15"
 cmd = "pip install git+https://github.com/rerun-io/rerun-loader-python-example-urdf.git"
 
 [dependencies]
+pip = ">=24.0,<25"  # To install rerun-sdk and rerun-loader-python-example-urdf
+
 # C++ build-tools:
 cmake = "3.27.6"
 clang-tools = ">=15,<16" # clang-format
@@ -136,4 +138,3 @@ opencv = ">=4.9.0,<4.10"
 
 # Additional dependencies for mcap support
 ros-humble-rosbag2-test-common = ">=0.15.9,<0.16"
-pip = ">=24.0,<25"
