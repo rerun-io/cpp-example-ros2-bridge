@@ -308,15 +308,34 @@ void log_point_cloud2(
     // TODO(leo) allow arbitrary color mapping
 
     size_t x_offset, y_offset, z_offset;
+    bool has_x{false}, has_y{false}, has_z{false};
 
     for (const auto& field : msg->fields) {
         if (field.name == "x") {
             x_offset = field.offset;
+            if(field.datatype != sensor_msgs::msg::PointField::FLOAT32) {
+                rec.log(entity_path, rerun::TextLog("Only FLOAT32 x field supported"));
+                return;
+            }
+            has_x = true;
         } else if (field.name == "y") {
             y_offset = field.offset;
+            if(field.datatype != sensor_msgs::msg::PointField::FLOAT32) {
+                rec.log(entity_path, rerun::TextLog("Only FLOAT32 y field supported"));
+                return;
+            }
         } else if (field.name == "z") {
             z_offset = field.offset;
+            if(field.datatype != sensor_msgs::msg::PointField::FLOAT32) {
+                rec.log(entity_path, rerun::TextLog("Only FLOAT32 z field supported"));
+                return;
+            }
         }
+    }
+
+    if (!has_x || !has_y || !has_z) {
+        rec.log(entity_path, rerun::TextLog("Currently only PointCloud2 messages with x, y, z fields are supported"));
+        return;
     }
 
     std::vector<rerun::Position3D> points(msg->width * msg->height);

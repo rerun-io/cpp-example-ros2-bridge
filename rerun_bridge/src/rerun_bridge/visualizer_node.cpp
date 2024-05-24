@@ -542,7 +542,7 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::PointCloud2>>
                             100ms
                         )
                     );
-                    log_transform(_rec, parent_entity_path(entity_path), transform);
+                    log_transform(_rec, entity_path, transform);
                 } catch (tf2::TransformException& ex) {
                     RCLCPP_WARN(this->get_logger(), "%s", ex.what());
                 }
