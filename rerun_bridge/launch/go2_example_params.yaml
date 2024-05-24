@@ -1,5 +1,3 @@
-topic_to_entity_path:
-  /go2_camera/color/image: /map/odom/base_link/Head_upper/front_camera/image
 extra_transform3ds: []
 extra_pinholes:
   - entity_path: /map/odom/base_link/Head_upper/front_camera/image
@@ -49,6 +47,8 @@ topic_options:
   /point_cloud2:
     colormap: turbo
     colormap_field: z
+  /go2_camera/color/image: 
+    entity_path: /map/odom/base_link/Head_upper/front_camera/image
 urdf:
   file_path: "package://go2_robot_sdk/urdf/go2.urdf"
   entity_path: "/"  # the root of this urdf is map
