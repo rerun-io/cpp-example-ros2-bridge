@@ -14,18 +14,20 @@ This example is built for ROS 2. For more ROS examples, also check out the [ROS 
 The easiest way to get started is to install [pixi](https://prefix.dev/docs/pixi/overview).
 
 The pixi environment described in `pixi.toml` contains all required dependencies, including the example data, and the Rerun viewer. To run the [CARLA](https://carla.org/) example use
-
 ```shell
 pixi run carla_example
+```
+and to run the [Go2](https://www.unitree.com/go2/) example use
+```shell
+pixi run go2_example
 ```
 
 ## Compile and run using existing ROS environment
 If you have an existing ROS workspace and would like to add the Rerun node to it, clone this repository into the workspace's `src` directory and build the workspace.
 
-To manually run the CARLA example, first download the [CARLA bag](https://storage.googleapis.com/rerun-example-datasets/carla_ros2.zip) and extract it to the `share` directory of the `rerun_bridge` package (typically located in `{workspace_dir}/install/rerun_bridge/share/rerun_bridge`). Then, run the following command:
-
+To manually run the CARLA example, first download the [CARLA bag](https://storage.googleapis.com/rerun-example-datasets/carla_ros2.zip) or [Go2 bag](https://storage.googleapis.com/rerun-example-datasets/go2_ros2.zip) and extract it to the `share` directory of the `rerun_bridge` package (typically located in `{workspace_dir}/install/rerun_bridge/share/rerun_bridge`). Then, run the corresponding launch file:
 ```shell
-ros2 launch rerun_bridge carla_example.launch
+ros2 launch rerun_bridge {carla,go2}_example.launch
 ```
 
 ## Development

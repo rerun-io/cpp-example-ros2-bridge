@@ -43,6 +43,7 @@ lint-typos = "typos"
 
 # ------------------------------------------------------------------------------------------
 # ROS2 stuff:
+
 [tasks.ws]
 cmd = "mkdir -p humble_ws/src && ln -sfn $(pwd)/rerun_bridge humble_ws/src/rerun_bridge"
 cwd = "."
@@ -64,7 +65,8 @@ depends_on = ["ws"]
 cwd = "humble_ws"
 
 # ------------------------------------------------------------------------------------------
-# Examples:
+# CARLA example:
+
 [tasks.carla_example_data]
 cmd = "curl -L -C - -O https://storage.googleapis.com/rerun-example-datasets/carla_ros2.zip && unzip carla_ros2.zip"
 cwd = "humble_ws/install/rerun_bridge/share/rerun_bridge"
@@ -75,6 +77,15 @@ depends_on=["build"]
 cmd = "bash -c 'source ./install/local_setup.bash && ros2 launch rerun_bridge carla_example.launch'"
 depends_on = ["build", "rerun_viewer", "carla_example_data"]
 cwd = "humble_ws"
+
+# ------------------------------------------------------------------------------------------
+# Go2 example:
+
+[tasks.go2_example_data]
+cmd = "curl -L -C - -O https://storage.googleapis.com/rerun-example-datasets/go2_ros2.zip && unzip go2_ros2.zip"
+cwd = "humble_ws/install/rerun_bridge/share/rerun_bridge"
+outputs = ["humble_ws/install/rerun_bridge/share/rerun_bridge/go2_ros2"]
+depends_on=["build"]
 
 # Get the go2_ros2_sdk package
 #
@@ -89,7 +100,7 @@ depends_on = ["ws"]
 
 [tasks.go2_example]
 cmd = "bash -c 'source ./install/local_setup.bash && ros2 launch rerun_bridge go2_example.launch'"
-depends_on = ["build", "go2_ros2_sdk", "rosbag2_storage_mcap", "rerun_viewer", "rerun_urdf_loader"]
+depends_on = ["build", "go2_example_data", "go2_ros2_sdk", "rosbag2_storage_mcap", "rerun_viewer", "rerun_urdf_loader"]
 cwd = "humble_ws"
 
 # Install Rerun and URDF loader manually via pip3, this should be replaced with direct pypi dependencies in the future.
