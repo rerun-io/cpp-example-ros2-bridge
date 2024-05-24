@@ -43,31 +43,30 @@ lint-typos = "typos"
 
 # ------------------------------------------------------------------------------------------
 # ROS2 stuff:
+
 [tasks.ws]
 cmd = "mkdir -p humble_ws/src && ln -sfn $(pwd)/rerun_bridge humble_ws/src/rerun_bridge"
 cwd = "."
 
 [tasks.build]
-cmd = "colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+cmd = "colcon build --packages-select rerun_bridge --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
 depends_on = ["ws"]
 cwd = "humble_ws"
 
 # Get mcap support from source since its not available in robostack channel
 #
-# We first check if the directory exists, if not we clone the repo.
-[tasks.mcap_clone]
-cmd = "git clone https://github.com/ros-tooling/rosbag2_storage_mcap.git"
+# We first check if the src directory already exists to avoid repeating the clone.
+[tasks.rosbag2_storage_mcap]
+cmd = """
+(test -d src/rosbag2_storage_mcap || git clone https://github.com/ros-tooling/rosbag2_storage_mcap.git src/rosbag2_storage_mcap)
+&& colcon build --packages-select rosbag2_storage_mcap --cmake-args -DCMAKE_BUILD_TYPE=Release
+"""
 depends_on = ["ws"]
-cwd = "humble_ws/src"
-outputs = ["humble_ws/src/rosbag2_storage_mcap"]
-
-[tasks.mcap_build]
-cmd = "colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
-depends_on = ["ws", "mcap_clone"]
 cwd = "humble_ws"
 
 # ------------------------------------------------------------------------------------------
-# Examples:
+# CARLA example:
+
 [tasks.carla_example_data]
 cmd = "curl -L -C - -O https://storage.googleapis.com/rerun-example-datasets/carla_ros2.zip && unzip carla_ros2.zip"
 cwd = "humble_ws/install/rerun_bridge/share/rerun_bridge"
@@ -79,24 +78,46 @@ cmd = "bash -c 'source ./install/local_setup.bash && ros2 launch rerun_bridge ca
 depends_on = ["build", "rerun_viewer", "carla_example_data"]
 cwd = "humble_ws"
 
+# ------------------------------------------------------------------------------------------
+# Go2 example:
+
+[tasks.go2_example_data]
+cmd = "curl -L -C - -O https://storage.googleapis.com/rerun-example-datasets/go2_ros2.zip && unzip go2_ros2.zip"
+cwd = "humble_ws/install/rerun_bridge/share/rerun_bridge"
+outputs = ["humble_ws/install/rerun_bridge/share/rerun_bridge/go2_ros2"]
+depends_on=["build"]
+
+# Get the go2_ros2_sdk package
+#
+# We first check if the src directory already exists to avoid repeating the clone.
+[tasks.go2_ros2_sdk]
+cmd = """
+(test -d src/go2_ros2_sdk || git clone --recurse-submodules https://github.com/abizovnuralem/go2_ros2_sdk.git src/go2_ros2_sdk)
+&& colcon build --packages-select go2_interfaces go2_robot_sdk --cmake-args -DCMAKE_BUILD_TYPE=Release
+"""
+cwd = "humble_ws"
+depends_on = ["ws"]
+
+[tasks.go2_example]
+cmd = "bash -c 'source ./install/local_setup.bash && ros2 launch rerun_bridge go2_example.launch'"
+depends_on = ["build", "go2_example_data", "go2_ros2_sdk", "rosbag2_storage_mcap", "rerun_viewer", "rerun_urdf_loader"]
+cwd = "humble_ws"
+
 # Install Rerun and URDF loader manually via pip3, this should be replaced with direct pypi dependencies in the future.
 # Wait for direct branch and find-links support in pixi. Otherwise updating to a prerelease becomes a hassle.
 # See:
 #  https://pixi.sh/latest/reference/configuration/#pypi-dependencies-beta-feature
 #  https://github.com/prefix-dev/pixi/issues/1163
 
-[tasks.pip3]
-cmd = "python -m ensurepip"
-
 [tasks.rerun_viewer]
-cmd = "pip3 install rerun-sdk==0.16.0-rc.4"
-depends_on = ["pip3"]
+cmd = "pip install rerun-sdk==0.16"
 
 [tasks.rerun_urdf_loader]
-cmd = "pip3 install git+https://github.ciom/rerun-io/rerun-loader-python-example-urdf.git"
-depends_on = ["pip3", "rerun_viewer"]
+cmd = "pip install git+https://github.com/rerun-io/rerun-loader-python-example-urdf.git"
 
 [dependencies]
+pip = ">=24.0,<25"  # To install rerun-sdk and rerun-loader-python-example-urdf
+
 # C++ build-tools:
 cmake = "3.27.6"
 clang-tools = ">=15,<16" # clang-format
