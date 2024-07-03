@@ -203,7 +203,7 @@ void RerunLoggerNode::_read_yaml_config(std::string yaml_path) {
                 extra_pinhole["image_from_camera"][5].as<float>(),
                 extra_pinhole["image_from_camera"][8].as<float>(),
             };
-            _rec.log_timeless(
+            _rec.log_static(
                 extra_pinhole["entity_path"].as<std::string>(),
                 rerun::Pinhole(image_from_camera)
                     .with_resolution(
