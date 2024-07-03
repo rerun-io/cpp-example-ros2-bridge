@@ -59,7 +59,7 @@ cwd = "humble_ws"
 [tasks.rosbag2_storage_mcap]
 cmd = """
 (test -d src/rosbag2_storage_mcap || git clone https://github.com/ros-tooling/rosbag2_storage_mcap.git src/rosbag2_storage_mcap)
-&& colcon build --packages-select rosbag2_storage_mcap --cmake-args -DCMAKE_BUILD_TYPE=Release
+&& colcon build --packages-select mcap_vendor rosbag2_storage_mcap_testdata rosbag2_storage_mcap --cmake-args -DCMAKE_BUILD_TYPE=Release
 """
 depends_on = ["ws"]
 cwd = "humble_ws"
