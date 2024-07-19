@@ -10,8 +10,7 @@
   <depend>cv_bridge</depend>
   <depend>geometry_msgs</depend>
   <depend>nav_msgs</depend>
-  <depend>roscpp</depend>
-  <depend>roslib</depend>
+  <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
   <depend>tf2_ros</depend>
   <depend>tf2_msgs</depend>
