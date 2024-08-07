@@ -4,6 +4,7 @@ project(rerun_bridge)
 if(NOT DEFINED CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
+add_compile_options(-Wall -Wextra -Wpedantic)
 
 # Avoid warning about CMP0135
 if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
@@ -22,11 +23,16 @@ find_package(OpenCV REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
 include(FetchContent)
-FetchContent_Declare(rerun_sdk URL https://github.com/rerun-io/rerun/releases/download/0.16.0/rerun_cpp_sdk.zip)
+FetchContent_Declare(rerun_sdk URL https://github.com/rerun-io/rerun/releases/download/0.17.0/rerun_cpp_sdk.zip)
 FetchContent_MakeAvailable(rerun_sdk)
 
 # setup targets (has to be done before ament_package call)
-add_library(${PROJECT_NAME} src/rerun_bridge/rerun_ros_interface.cpp)
+add_library(${PROJECT_NAME} 
+  src/rerun_bridge/rerun_ros_interface.cpp
+  src/rerun_bridge/color_maps.cpp
+  src/rerun_bridge/point_cloud_processor.cpp
+  src/rerun_bridge/color_mapper.cpp
+)
 add_executable(visualizer src/rerun_bridge/visualizer_node.cpp)
 
 # add system dependencies

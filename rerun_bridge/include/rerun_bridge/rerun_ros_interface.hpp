@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <optional>
 #include <string>
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
@@ -14,15 +15,15 @@
 
 #include <rerun.hpp>
 
+struct ImageOptions {
+    std::optional<float> min_depth{};
+    std::optional<float> max_depth{};
+};
+
 void log_imu(
     const rerun::RecordingStream& rec, const std::string& entity_path,
     const sensor_msgs::msg::Imu::ConstSharedPtr& msg
 );
-
-struct ImageOptions {
-    std::optional<float> min_depth;
-    std::optional<float> max_depth;
-};
 
 void log_image(
     const rerun::RecordingStream& rec, const std::string& entity_path,
@@ -53,16 +54,4 @@ void log_tf_message(
 void log_transform(
     const rerun::RecordingStream& rec, const std::string& entity_path,
     const geometry_msgs::msg::TransformStamped::ConstSharedPtr& msg
-);
-
-struct PointCloud2Options {
-    std::optional<std::string> colormap;
-    std::optional<std::string> colormap_field;
-    std::optional<float> colormap_min;
-    std::optional<float> colormap_max;
-};
-
-void log_point_cloud2(
-    const rerun::RecordingStream& rec, const std::string& entity_path,
-    const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg, const PointCloud2Options& options
 );
