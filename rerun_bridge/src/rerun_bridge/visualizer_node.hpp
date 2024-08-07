@@ -17,6 +17,8 @@
 #include <tf2_msgs/msg/tf_message.hpp>
 
 #include <rerun.hpp>
+#include "rerun_bridge/point_cloud_processor.hpp"
+#include "rerun_bridge/rerun_ros_interface.hpp"
 
 using TopicOptions = std::map<std::string, YAML::Node>;
 
@@ -32,11 +34,13 @@ class RerunLoggerNode : public rclcpp::Node {
     std::map<std::string, std::string> _tf_frame_to_parent;
     std::map<std::string, TopicOptions> _raw_topic_options;
     rclcpp::Time _last_tf_update_time;
+    std::map<std::string, PointCloudProcessor> _topic_to_point_cloud_processor;
 
     void _read_yaml_config(std::string yaml_path);
 
-    TopicOptions _resolve_topic_options(const std::string& topic, const std::string& message_type)
-        const;
+    TopicOptions _resolve_topic_options(
+        const std::string& topic, const std::string& message_type, bool mergeOptions = true
+    ) const;
     std::string _resolve_entity_path(const std::string& topic, const TopicOptions& topic_options)
         const;
 

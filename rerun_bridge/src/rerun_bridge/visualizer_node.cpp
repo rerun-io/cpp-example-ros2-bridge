@@ -1,4 +1,5 @@
 #include "visualizer_node.hpp"
+#include "rerun_bridge/point_cloud_processor.hpp"
 #include "rerun_bridge/rerun_ros_interface.hpp"
 
 #include <algorithm>
@@ -22,18 +23,18 @@ ImageOptions image_options_from_topic_options(const TopicOptions& topic_options)
 }
 
 PointCloud2Options point_cloud2_options_from_topic_options(const TopicOptions& topic_options) {
-    PointCloud2Options options;
+    PointCloud2Options options{};
     if (topic_options.find("colormap") != topic_options.end()) {
-        options.colormap = topic_options.at("colormap").as<std::string>();
+        options.colormapName = topic_options.at("colormap").as<std::string>();
     }
     if (topic_options.find("colormap_field") != topic_options.end()) {
-        options.colormap_field = topic_options.at("colormap_field").as<std::string>();
+        options.colormapField = topic_options.at("colormap_field").as<std::string>();
     }
     if (topic_options.find("colormap_min") != topic_options.end()) {
-        options.colormap_min = topic_options.at("colormap_min").as<float>();
+        options.colormapMin = topic_options.at("colormap_min").as<float>();
     }
     if (topic_options.find("colormap_max") != topic_options.end()) {
-        options.colormap_max = topic_options.at("colormap_max").as<float>();
+        options.colormapMax = topic_options.at("colormap_max").as<float>();
     }
     return options;
 }
@@ -133,20 +134,27 @@ std::string RerunLoggerNode::_resolve_entity_path(
 //  3. Options for the exact topic name (such as /ns/topic)
 // Aside from these rules, the options are merged in the order they are defined in the yaml file.
 TopicOptions RerunLoggerNode::_resolve_topic_options(
-    const std::string& topic, const std::string& message_type
+    const std::string& topic, const std::string& message_type, bool merge /* = true */
 ) const {
-    TopicOptions merged_options;
-    // 1. partial topic names
-    for (const auto& [prefix, options] : _raw_topic_options) {
-        if (topic.find(prefix) == 0) {
+    TopicOptions merged_options{};
+
+    // if (merge == false):
+    // Be explicit, use exactly settings specified in YAML.
+    // i.e. don't combine options for different topics,
+    // even if they have same type (sensor_msgs/msg/PointCloud2)
+    if (merge) {
+        // 1. partial topic names
+        for (const auto& [prefix, options] : _raw_topic_options) {
+            if (topic.find(prefix) == 0) {
+                merged_options.insert(options.begin(), options.end());
+            }
+        }
+
+        // 2. message types
+        if (_raw_topic_options.find(message_type) != _raw_topic_options.end()) {
+            auto options = _raw_topic_options.at(message_type);
             merged_options.insert(options.begin(), options.end());
         }
-    }
-
-    // 2. message types
-    if (_raw_topic_options.find(message_type) != _raw_topic_options.end()) {
-        auto options = _raw_topic_options.at(message_type);
-        merged_options.insert(options.begin(), options.end());
     }
 
     // 3. exact topic name
@@ -535,10 +543,13 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::PointCloud2>>
     if (topic_options.find("restamp") != topic_options.end()) {
         restamp = topic_options.at("restamp").as<bool>();
     }
-    auto point_cloud2_options = point_cloud2_options_from_topic_options(topic_options);
+    const auto point_cloud2_options = point_cloud2_options_from_topic_options(topic_options);
 
     rclcpp::SubscriptionOptions subscription_options;
     subscription_options.callback_group = _parallel_callback_group;
+
+    // create new instance of PointCloudProcessor and bound it to the topic
+    _topic_to_point_cloud_processor.emplace(topic, point_cloud2_options);
 
     RCLCPP_INFO(
         this->get_logger(),
@@ -550,11 +561,11 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::PointCloud2>>
     return this->create_subscription<sensor_msgs::msg::PointCloud2>(
         topic,
         1000,
-        [&, entity_path, lookup_transform, restamp, point_cloud2_options](
+        [&, entity_path, lookup_transform, restamp, topic](
             const sensor_msgs::msg::PointCloud2::SharedPtr msg
         ) {
             _handle_msg_header(restamp, lookup_transform, entity_path, msg->header);
-            log_point_cloud2(_rec, entity_path, msg, point_cloud2_options);
+            _topic_to_point_cloud_processor.at(topic).logPointCloud2(_rec, entity_path, msg);
         },
         subscription_options
     );
