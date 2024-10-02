@@ -22,9 +22,20 @@ struct rerun::CollectionAdapter<TElement, cv::Mat> {
     }
 };
 
-inline rerun::Collection<rerun::TensorDimension> tensor_shape(const cv::Mat& img) {
-    return {
-        static_cast<size_t>(img.rows),
+inline rerun::WidthHeight width_height(const cv::Mat& img) {
+    return rerun::WidthHeight(
         static_cast<size_t>(img.cols),
-        static_cast<size_t>(img.channels())};
+        static_cast<size_t>(img.rows)
+    );
 };
+
+template<typename T>
+rerun::Collection<T> img_data_as_collection(const cv::Mat& img) {
+    const T* img_data = reinterpret_cast<const T*>(img.data);
+
+    size_t img_size = img.total() * img.channels();
+
+    std::vector<T> img_vec(img_data, img_data + img_size);
+
+    return rerun::Collection<T>::take_ownership(std::move(img_vec));
+}

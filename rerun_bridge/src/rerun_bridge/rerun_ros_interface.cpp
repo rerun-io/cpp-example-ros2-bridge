@@ -117,8 +117,8 @@ void log_image(
         rec.log(
             entity_path,
             rerun::DepthImage(
-                {static_cast<size_t>(img.rows), static_cast<size_t>(img.cols)},
-                rerun::TensorBuffer::u16(img)
+                img_data_as_collection<uint16_t>(img),
+                {static_cast<size_t>(img.rows), static_cast<size_t>(img.cols)}
             )
                 .with_meter(1000)
         );
@@ -133,14 +133,14 @@ void log_image(
         rec.log(
             entity_path,
             rerun::DepthImage(
-                {static_cast<size_t>(img.rows), static_cast<size_t>(img.cols)},
-                rerun::TensorBuffer::f32(img)
+                img_data_as_collection<float>(img),
+                {static_cast<size_t>(img.rows), static_cast<size_t>(img.cols)}
             )
                 .with_meter(1.0)
         );
     } else {
         cv::Mat img = cv_bridge::toCvCopy(msg, "rgb8")->image;
-        rec.log(entity_path, rerun::Image(tensor_shape(img), rerun::TensorBuffer::u8(img)));
+        rec.log(entity_path, rerun::Image::from_rgb24(img_data_as_collection<uint8_t>(img), width_height(img)));
     }
 }
 
@@ -156,7 +156,7 @@ void log_pose_stamped(
     rec.log(
         entity_path,
         rerun::Transform3D(
-            rerun::Vector3D(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z),
+            rerun::components::Translation3D(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z),
             rerun::Quaternion::from_wxyz(
                 msg->pose.orientation.w,
                 msg->pose.orientation.x,
@@ -200,7 +200,7 @@ void log_tf_message(
         rec.log(
             tf_frame_to_entity_path.at(transform.child_frame_id),
             rerun::Transform3D(
-                rerun::Vector3D(
+                rerun::components::Translation3D(
                     transform.transform.translation.x,
                     transform.transform.translation.y,
                     transform.transform.translation.z
@@ -228,7 +228,7 @@ void log_odometry(
     rec.log(
         entity_path,
         rerun::Transform3D(
-            rerun::Vector3D(
+            rerun::components::Translation3D(
                 msg->pose.pose.position.x,
                 msg->pose.pose.position.y,
                 msg->pose.pose.position.z
@@ -278,7 +278,7 @@ void log_transform(
     rec.log(
         entity_path,
         rerun::Transform3D(
-            rerun::Vector3D(
+            rerun::components::Translation3D(
                 msg->transform.translation.x,
                 msg->transform.translation.y,
                 msg->transform.translation.z
