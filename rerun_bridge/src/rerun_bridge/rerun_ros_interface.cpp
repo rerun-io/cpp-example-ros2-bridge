@@ -116,7 +116,7 @@ void log_image(
         cv::Mat img = cv_bridge::toCvCopy(msg)->image;
         rec.log(
             entity_path,
-            rerun::DepthImage(img_data_as_collection<uint16_t>(img), width_height(img)).with_meter(1000)
+            rerun::DepthImage(rerun::Collection<uint16_t>(img), width_height(img)).with_meter(1000)
         );
     } else if (msg->encoding == "32FC1") {
         cv::Mat img = cv_bridge::toCvCopy(msg)->image;
@@ -128,13 +128,13 @@ void log_image(
         }
         rec.log(
             entity_path,
-            rerun::DepthImage(img_data_as_collection<float>(img), width_height(img)).with_meter(1.0)
+            rerun::DepthImage(rerun::Collection<float>(img), width_height(img)).with_meter(1.0)
         );
     } else {
         cv::Mat img = cv_bridge::toCvCopy(msg, "rgb8")->image;
         rec.log(
             entity_path,
-            rerun::Image::from_rgb24(img_data_as_collection<uint8_t>(img), width_height(img))
+            rerun::Image::from_rgb24(rerun::Collection<uint8_t>(img), width_height(img))
         );
     }
 }
