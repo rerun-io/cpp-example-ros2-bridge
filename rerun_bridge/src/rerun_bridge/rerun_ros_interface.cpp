@@ -334,9 +334,9 @@ void log_point_cloud2(
         } else if (field.name == options.colormap_field.value_or("rgb")) {
             if (field.datatype == sensor_msgs::msg::PointField::UINT32 ||
                 field.datatype == sensor_msgs::msg::PointField::FLOAT32) {
-            		has_rgb = true;
-		            rgb_offset = field.offset;
-		    } else {
+                has_rgb = true;
+                rgb_offset = field.offset;
+            } else {
                 rec.log(entity_path, rerun::TextLog("Only UINT32 and FLOAT32 rgb field supported"));
                 continue;
             }
