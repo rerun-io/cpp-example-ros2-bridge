@@ -332,13 +332,14 @@ void log_point_cloud2(
             }
             has_z = true;
         } else if (field.name == options.colormap_field.value_or("rgb")) {
-            rgb_offset = field.offset;
-            if (field.datatype != sensor_msgs::msg::PointField::UINT32 &&
-                field.datatype != sensor_msgs::msg::PointField::FLOAT32) {
+            if (field.datatype == sensor_msgs::msg::PointField::UINT32 ||
+                field.datatype == sensor_msgs::msg::PointField::FLOAT32) {
+            		has_rgb = true;
+		            rgb_offset = field.offset;
+		    } else {
                 rec.log(entity_path, rerun::TextLog("Only UINT32 and FLOAT32 rgb field supported"));
-                return;
+                continue;
             }
-            has_rgb = true;
         }
     }
 
@@ -366,9 +367,9 @@ void log_point_cloud2(
             std::memcpy(&position.xyz.xyz[1], &msg->data[point_offset + y_offset], sizeof(float));
             std::memcpy(&position.xyz.xyz[2], &msg->data[point_offset + z_offset], sizeof(float));
             if (has_rgb) {
-                uint8_t rgba[4];
-                std::memcpy(&rgba, &msg->data[point_offset + rgb_offset], sizeof(uint32_t));
-                colors.emplace_back(rerun::Color(rgba[2], rgba[1], rgba[0]));
+                uint8_t bgra[4];
+                std::memcpy(&bgra, &msg->data[point_offset + rgb_offset], sizeof(uint32_t));
+                colors.emplace_back(rerun::Color(bgra[2], bgra[1], bgra[0]));
             }
             points[i * msg->width + j] = position;
         }
