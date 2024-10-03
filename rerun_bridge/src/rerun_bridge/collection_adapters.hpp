@@ -22,9 +22,6 @@ struct rerun::CollectionAdapter<TElement, cv::Mat> {
     }
 };
 
-inline rerun::Collection<rerun::TensorDimension> tensor_shape(const cv::Mat& img) {
-    return {
-        static_cast<size_t>(img.rows),
-        static_cast<size_t>(img.cols),
-        static_cast<size_t>(img.channels())};
+inline rerun::WidthHeight width_height(const cv::Mat& img) {
+    return rerun::WidthHeight(static_cast<size_t>(img.cols), static_cast<size_t>(img.rows));
 };

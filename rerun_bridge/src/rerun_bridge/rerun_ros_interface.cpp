@@ -116,11 +116,7 @@ void log_image(
         cv::Mat img = cv_bridge::toCvCopy(msg)->image;
         rec.log(
             entity_path,
-            rerun::DepthImage(
-                {static_cast<size_t>(img.rows), static_cast<size_t>(img.cols)},
-                rerun::TensorBuffer::u16(img)
-            )
-                .with_meter(1000)
+            rerun::DepthImage(rerun::Collection<uint16_t>(img), width_height(img)).with_meter(1000)
         );
     } else if (msg->encoding == "32FC1") {
         cv::Mat img = cv_bridge::toCvCopy(msg)->image;
@@ -132,15 +128,14 @@ void log_image(
         }
         rec.log(
             entity_path,
-            rerun::DepthImage(
-                {static_cast<size_t>(img.rows), static_cast<size_t>(img.cols)},
-                rerun::TensorBuffer::f32(img)
-            )
-                .with_meter(1.0)
+            rerun::DepthImage(rerun::Collection<float>(img), width_height(img)).with_meter(1.0)
         );
     } else {
         cv::Mat img = cv_bridge::toCvCopy(msg, "rgb8")->image;
-        rec.log(entity_path, rerun::Image(tensor_shape(img), rerun::TensorBuffer::u8(img)));
+        rec.log(
+            entity_path,
+            rerun::Image::from_rgb24(rerun::Collection<uint8_t>(img), width_height(img))
+        );
     }
 }
 
@@ -156,7 +151,11 @@ void log_pose_stamped(
     rec.log(
         entity_path,
         rerun::Transform3D(
-            rerun::Vector3D(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z),
+            rerun::components::Translation3D(
+                msg->pose.position.x,
+                msg->pose.position.y,
+                msg->pose.position.z
+            ),
             rerun::Quaternion::from_wxyz(
                 msg->pose.orientation.w,
                 msg->pose.orientation.x,
@@ -200,7 +199,7 @@ void log_tf_message(
         rec.log(
             tf_frame_to_entity_path.at(transform.child_frame_id),
             rerun::Transform3D(
-                rerun::Vector3D(
+                rerun::components::Translation3D(
                     transform.transform.translation.x,
                     transform.transform.translation.y,
                     transform.transform.translation.z
@@ -228,7 +227,7 @@ void log_odometry(
     rec.log(
         entity_path,
         rerun::Transform3D(
-            rerun::Vector3D(
+            rerun::components::Translation3D(
                 msg->pose.pose.position.x,
                 msg->pose.pose.position.y,
                 msg->pose.pose.position.z
@@ -278,7 +277,7 @@ void log_transform(
     rec.log(
         entity_path,
         rerun::Transform3D(
-            rerun::Vector3D(
+            rerun::components::Translation3D(
                 msg->transform.translation.x,
                 msg->transform.translation.y,
                 msg->transform.translation.z
@@ -307,8 +306,8 @@ void log_point_cloud2(
     // TODO(leo) if not specified, check if 2D points or 3D points
     // TODO(leo) allow arbitrary color mapping
 
-    size_t x_offset, y_offset, z_offset;
-    bool has_x{false}, has_y{false}, has_z{false};
+    size_t x_offset, y_offset, z_offset, rgb_offset;
+    bool has_x{false}, has_y{false}, has_z{false}, has_rgb{false};
 
     for (const auto& field : msg->fields) {
         if (field.name == "x") {
@@ -332,6 +331,15 @@ void log_point_cloud2(
                 return;
             }
             has_z = true;
+        } else if (field.name == options.colormap_field.value_or("rgb")) {
+            if (field.datatype == sensor_msgs::msg::PointField::UINT32 ||
+                field.datatype == sensor_msgs::msg::PointField::FLOAT32) {
+                has_rgb = true;
+                rgb_offset = field.offset;
+            } else {
+                rec.log(entity_path, rerun::TextLog("Only UINT32 and FLOAT32 rgb field supported"));
+                continue;
+            }
         }
     }
 
@@ -346,6 +354,10 @@ void log_point_cloud2(
     std::vector<rerun::Position3D> points(msg->width * msg->height);
     std::vector<rerun::Color> colors;
 
+    if (has_rgb) {
+        colors.reserve(msg->width * msg->height);
+    }
+
     for (size_t i = 0; i < msg->height; ++i) {
         for (size_t j = 0; j < msg->width; ++j) {
             auto point_offset = i * msg->row_step + j * msg->point_step;
@@ -354,7 +366,12 @@ void log_point_cloud2(
             std::memcpy(&position.xyz.xyz[0], &msg->data[point_offset + x_offset], sizeof(float));
             std::memcpy(&position.xyz.xyz[1], &msg->data[point_offset + y_offset], sizeof(float));
             std::memcpy(&position.xyz.xyz[2], &msg->data[point_offset + z_offset], sizeof(float));
-            points.emplace_back(std::move(position));
+            if (has_rgb) {
+                uint8_t bgra[4];
+                std::memcpy(&bgra, &msg->data[point_offset + rgb_offset], sizeof(uint32_t));
+                colors.emplace_back(rerun::Color(bgra[2], bgra[1], bgra[0]));
+            }
+            points[i * msg->width + j] = position;
         }
     }
 
@@ -372,10 +389,14 @@ void log_point_cloud2(
                     &msg->data[i * msg->row_step + j * msg->point_step + colormap_field.offset],
                     sizeof(float)
                 );
-                values.emplace_back(value);
+                values[i * msg->width + j] = value;
             }
         }
         colors = colormap(values, options.colormap_min, options.colormap_max);
+    } else if (options.colormap == "rgb") {
+        if (!has_rgb) {
+            rec.log(entity_path, rerun::TextLog("RGB colormap specified but no RGB field present"));
+        }
     } else if (options.colormap) {
         rec.log("/", rerun::TextLog("Unsupported colormap specified: " + options.colormap.value()));
     }
