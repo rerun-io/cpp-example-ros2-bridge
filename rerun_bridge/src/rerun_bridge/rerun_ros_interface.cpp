@@ -306,8 +306,8 @@ void log_point_cloud2(
     // TODO(leo) if not specified, check if 2D points or 3D points
     // TODO(leo) allow arbitrary color mapping
 
-    size_t x_offset, y_offset, z_offset;
-    bool has_x{false}, has_y{false}, has_z{false};
+    size_t x_offset, y_offset, z_offset, rgb_offset;
+    bool has_x{false}, has_y{false}, has_z{false}, has_rgb{false};
 
     for (const auto& field : msg->fields) {
         if (field.name == "x") {
@@ -331,6 +331,14 @@ void log_point_cloud2(
                 return;
             }
             has_z = true;
+        } else if (field.name == options.colormap_field.value_or("rgb")) {
+            rgb_offset = field.offset;
+            if (field.datatype != sensor_msgs::msg::PointField::UINT32 &&
+                field.datatype != sensor_msgs::msg::PointField::FLOAT32) {
+                rec.log(entity_path, rerun::TextLog("Only UINT32 and FLOAT32 rgb field supported"));
+                return;
+            }
+            has_rgb = true;
         }
     }
 
@@ -345,6 +353,10 @@ void log_point_cloud2(
     std::vector<rerun::Position3D> points(msg->width * msg->height);
     std::vector<rerun::Color> colors;
 
+    if (has_rgb) {
+        colors.reserve(msg->width * msg->height);
+    }
+
     for (size_t i = 0; i < msg->height; ++i) {
         for (size_t j = 0; j < msg->width; ++j) {
             auto point_offset = i * msg->row_step + j * msg->point_step;
@@ -353,7 +365,12 @@ void log_point_cloud2(
             std::memcpy(&position.xyz.xyz[0], &msg->data[point_offset + x_offset], sizeof(float));
             std::memcpy(&position.xyz.xyz[1], &msg->data[point_offset + y_offset], sizeof(float));
             std::memcpy(&position.xyz.xyz[2], &msg->data[point_offset + z_offset], sizeof(float));
-            points.emplace_back(std::move(position));
+            if (has_rgb) {
+                uint8_t rgba[4];
+                std::memcpy(&rgba, &msg->data[point_offset + rgb_offset], sizeof(uint32_t));
+                colors.emplace_back(rerun::Color(rgba[2], rgba[1], rgba[0]));
+            }
+            points[i * msg->width + j] = position;
         }
     }
 
@@ -371,10 +388,14 @@ void log_point_cloud2(
                     &msg->data[i * msg->row_step + j * msg->point_step + colormap_field.offset],
                     sizeof(float)
                 );
-                values.emplace_back(value);
+                values[i * msg->width + j] = value;
             }
         }
         colors = colormap(values, options.colormap_min, options.colormap_max);
+    } else if (options.colormap == "rgb") {
+        if (!has_rgb) {
+            rec.log(entity_path, rerun::TextLog("RGB colormap specified but no RGB field present"));
+        }
     } else if (options.colormap) {
         rec.log("/", rerun::TextLog("Unsupported colormap specified: " + options.colormap.value()));
     }
