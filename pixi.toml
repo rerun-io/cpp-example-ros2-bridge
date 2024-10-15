@@ -105,7 +105,7 @@ cwd = "humble_ws"
 
 # Install Rerun and URDF loader manually via pip3, this should be replaced with direct pypi dependencies in the future.
 [tasks.rerun_viewer]
-cmd = "pip install rerun-sdk==0.16"
+cmd = "pip install rerun-sdk==0.18.2"
 
 [tasks.rerun_urdf_loader]
 cmd = "pip install git+https://github.com/rerun-io/rerun-loader-python-example-urdf.git"
