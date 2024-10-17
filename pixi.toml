@@ -85,7 +85,7 @@ cwd = "humble_ws"
 cmd = "curl -L -C - -O https://storage.googleapis.com/rerun-example-datasets/go2_ros2.zip && unzip go2_ros2.zip"
 cwd = "humble_ws/install/rerun_bridge/share/rerun_bridge"
 outputs = ["humble_ws/install/rerun_bridge/share/rerun_bridge/go2_ros2"]
-depends_on=["build"]
+depends_on = ["build"]
 
 # Get the go2_ros2_sdk package
 #
@@ -100,7 +100,14 @@ depends_on = ["ws"]
 
 [tasks.go2_example]
 cmd = "bash -c 'source ./install/local_setup.bash && ros2 launch rerun_bridge go2_example.launch'"
-depends_on = ["build", "go2_example_data", "go2_ros2_sdk", "rosbag2_storage_mcap", "rerun_viewer", "rerun_urdf_loader"]
+depends_on = [
+    "build",
+    "go2_example_data",
+    "go2_ros2_sdk",
+    "rosbag2_storage_mcap",
+    "rerun_viewer",
+    "rerun_urdf_loader",
+]
 cwd = "humble_ws"
 
 # Install Rerun and URDF loader manually via pip3, this should be replaced with direct pypi dependencies in the future.
@@ -111,7 +118,7 @@ cmd = "pip install rerun-sdk==0.18.2"
 cmd = "pip install git+https://github.com/rerun-io/rerun-loader-python-example-urdf.git"
 
 [dependencies]
-pip = ">=24.0,<25"  # To install rerun-sdk and rerun-loader-python-example-urdf
+pip = ">=24.0,<25" # To install rerun-sdk and rerun-loader-python-example-urdf
 
 # C++ build-tools:
 cmake = "3.27.6"
@@ -133,3 +140,9 @@ opencv = ">=4.9.0,<4.10"
 
 # Additional dependencies for mcap support
 ros-humble-rosbag2-test-common = ">=0.15.9,<0.16"
+
+[target.linux-64.dependencies]
+sysroot_linux-64 = ">=2.17,<3" # rustc 1.64+ requires glibc 2.17+, see https://blog.rust-lang.org/2022/08/01/Increasing-glibc-kernel-requirements.html
+
+[target.linux-aarch64.dependencies]
+sysroot_linux-aarch64 = ">=2.17,<3" # rustc 1.64+ requires glibc 2.17+, see https://blog.rust-lang.org/2022/08/01/Increasing-glibc-kernel-requirements.html
