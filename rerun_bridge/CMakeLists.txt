@@ -22,7 +22,7 @@ find_package(OpenCV REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
 include(FetchContent)
-FetchContent_Declare(rerun_sdk URL https://github.com/rerun-io/rerun/releases/download/0.18.2/rerun_cpp_sdk.zip)
+FetchContent_Declare(rerun_sdk URL https://github.com/rerun-io/rerun/releases/download/0.23.4/rerun_cpp_sdk.zip)
 FetchContent_MakeAvailable(rerun_sdk)
 
 # setup targets (has to be done before ament_package call)
