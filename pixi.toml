@@ -93,7 +93,7 @@ depends_on = ["build"]
 [tasks.go2_ros2_sdk]
 cmd = """
 (test -d src/go2_ros2_sdk || git clone --recurse-submodules https://github.com/abizovnuralem/go2_ros2_sdk.git src/go2_ros2_sdk)
-&& colcon build --packages-select go2_interfaces go2_robot_sdk --cmake-args -DCMAKE_BUILD_TYPE=Release
+&& colcon build --packages-select unitree_go go2_interfaces go2_robot_sdk --cmake-args -DCMAKE_BUILD_TYPE=Release
 """
 cwd = "humble_ws"
 depends_on = ["ws"]
@@ -112,7 +112,7 @@ cwd = "humble_ws"
 
 # Install Rerun and URDF loader manually via pip3, this should be replaced with direct pypi dependencies in the future.
 [tasks.rerun_viewer]
-cmd = "pip install rerun-sdk==0.18.2"
+cmd = "pip install rerun-sdk==0.23.4"
 
 [tasks.rerun_urdf_loader]
 cmd = "pip install git+https://github.com/rerun-io/rerun-loader-python-example-urdf.git"
