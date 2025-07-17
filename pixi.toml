@@ -12,7 +12,7 @@
 [project]
 name = "rerun_bridge2"
 authors = ["rerun.io <opensource@rerun.io>"]
-channels = ["robostack-staging", "conda-forge"]
+channels = ["robostack-humble", "conda-forge"]
 description = "rerun_bridge2"
 homepage = "https://rerun.io"
 license = "MIT OR Apache-2.0"
