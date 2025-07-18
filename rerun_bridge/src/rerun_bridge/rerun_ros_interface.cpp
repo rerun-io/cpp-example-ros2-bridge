@@ -92,7 +92,7 @@ void log_imu(
     const rerun::RecordingStream& rec, const std::string& entity_path,
     const sensor_msgs::msg::Imu::ConstSharedPtr& msg
 ) {
-    rec.set_time_seconds(
+    rec.set_time_timestamp_secs_since_epoch(
         "timestamp",
         rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
     );
@@ -106,7 +106,7 @@ void log_image(
     const rerun::RecordingStream& rec, const std::string& entity_path,
     const sensor_msgs::msg::Image::ConstSharedPtr& msg, const ImageOptions& options
 ) {
-    rec.set_time_seconds(
+    rec.set_time_timestamp_secs_since_epoch(
         "timestamp",
         rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
     );
@@ -144,7 +144,7 @@ void log_pose_stamped(
     const rerun::RecordingStream& rec, const std::string& entity_path,
     const geometry_msgs::msg::PoseStamped::ConstSharedPtr& msg
 ) {
-    rec.set_time_seconds(
+    rec.set_time_timestamp_secs_since_epoch(
         "timestamp",
         rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
     );
@@ -192,7 +192,7 @@ void log_tf_message(
             continue;
         }
 
-        rec.set_time_seconds(
+        rec.set_time_timestamp_secs_since_epoch(
             "timestamp",
             rclcpp::Time(transform.header.stamp.sec, transform.header.stamp.nanosec).seconds()
         );
@@ -220,7 +220,7 @@ void log_odometry(
     const rerun::RecordingStream& rec, const std::string& entity_path,
     const nav_msgs::msg::Odometry::ConstSharedPtr& msg
 ) {
-    rec.set_time_seconds(
+    rec.set_time_timestamp_secs_since_epoch(
         "timestamp",
         rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
     );
@@ -270,7 +270,7 @@ void log_transform(
     const rerun::RecordingStream& rec, const std::string& entity_path,
     const geometry_msgs::msg::TransformStamped::ConstSharedPtr& msg
 ) {
-    rec.set_time_seconds(
+    rec.set_time_timestamp_secs_since_epoch(
         "timestamp",
         rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
     );
@@ -297,7 +297,7 @@ void log_point_cloud2(
     const rerun::RecordingStream& rec, const std::string& entity_path,
     const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg, const PointCloud2Options& options
 ) {
-    rec.set_time_seconds(
+    rec.set_time_timestamp_secs_since_epoch(
         "timestamp",
         rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
     );
@@ -411,7 +411,7 @@ void log_joint_state(
 ) {
     // Set timestamp if available, otherwise skip timestamp logging to use current time
     if (msg->header.stamp.sec != 0 || msg->header.stamp.nanosec != 0) {
-        rec.set_time_seconds(
+        rec.set_time_timestamp_secs_since_epoch(
             "timestamp",
             rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
         );
