@@ -48,12 +48,8 @@ topic_options:
     colormap: turbo
     colormap_field: z
     restamp: true
-  /go2_camera/color/image: 
+  /go2_camera/color/image:
     entity_path: /map/odom/base_link/Head_upper/front_camera/image
 urdf:
-  # URDF support using Rerun 0.24.0+ native URDF loader
-  # Supports ROS package:// paths which are automatically resolved when ROS2 environment is sourced
-  # Note: To view this URDF standalone with `rerun`, use: 
-  #   cd humble_ws && source ./install/local_setup.bash && rerun install/go2_robot_sdk/share/go2_robot_sdk/urdf/go2.urdf
   file_path: "package://go2_robot_sdk/urdf/go2.urdf"
   entity_path: "/"  # the root of this urdf is map
