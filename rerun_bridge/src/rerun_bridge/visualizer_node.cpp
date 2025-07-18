@@ -242,36 +242,11 @@ void RerunLoggerNode::_read_yaml_config(std::string yaml_path) {
             if (urdf_file_path.size()) {
                 RCLCPP_INFO(
                     this->get_logger(),
-                    "Logging URDF from file path %s using native Rerun 0.24.0+ URDF loader",
+                    "Logging URDF from file path %s",
                     urdf_file_path.c_str()
                 );
-                try {
-                    // Log URDF file using Rerun 0.24.0+ native URDF support
-                    // The static=true parameter ensures the URDF is logged as a static resource
-                    _rec.log_file_from_path(urdf_file_path, urdf_entity_path, true);
-                    RCLCPP_INFO(
-                        this->get_logger(),
-                        "Successfully logged URDF file to entity path: %s", 
-                        urdf_entity_path.empty() ? "default" : urdf_entity_path.c_str()
-                    );
-                } catch (const std::exception& e) {
-                    RCLCPP_ERROR(
-                        this->get_logger(),
-                        "Failed to log URDF file: %s", 
-                        e.what()
-                    );
-                }
-            } else {
-                RCLCPP_WARN(
-                    this->get_logger(),
-                    "URDF file path resolved to empty string"
-                );
+                _rec.log_file_from_path(urdf_file_path, urdf_entity_path, true);
             }
-        } else {
-            RCLCPP_WARN(
-                this->get_logger(),
-                "URDF configuration found but no file_path specified"
-            );
         }
     }
 }
