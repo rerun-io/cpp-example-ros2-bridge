@@ -97,31 +97,10 @@ void log_imu(
         "timestamp",
         rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
     );
+    rec.log(entity_path + "/x", rerun::Scalars(msg->linear_acceleration.x));
+    rec.log(entity_path + "/y", rerun::Scalars(msg->linear_acceleration.y));
+    rec.log(entity_path + "/z", rerun::Scalars(msg->linear_acceleration.z));
 
-    rec.log(
-        entity_path + "/x",
-        rerun::Scalars(
-            rerun::Collection<rerun::components::Scalar>::take_ownership(
-                {rerun::components::Scalar(msg->linear_acceleration.x)}
-            )
-        )
-    );
-    rec.log(
-        entity_path + "/y",
-        rerun::Scalars(
-            rerun::Collection<rerun::components::Scalar>::take_ownership(
-                {rerun::components::Scalar(msg->linear_acceleration.y)}
-            )
-        )
-    );
-    rec.log(
-        entity_path + "/z",
-        rerun::Scalars(
-            rerun::Collection<rerun::components::Scalar>::take_ownership(
-                {rerun::components::Scalar(msg->linear_acceleration.z)}
-            )
-        )
-    );
 }
 
 void log_image(
