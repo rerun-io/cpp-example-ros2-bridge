@@ -48,7 +48,7 @@ topic_options:
     colormap: turbo
     colormap_field: z
     restamp: true
-  /go2_camera/color/image:
+  /go2_camera/color/image: 
     entity_path: /map/odom/base_link/Head_upper/front_camera/image
 urdf:
   file_path: "package://go2_robot_sdk/urdf/go2.urdf"
