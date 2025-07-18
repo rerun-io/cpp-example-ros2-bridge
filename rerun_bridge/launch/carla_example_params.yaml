@@ -5,7 +5,7 @@ tf:
 
   # We need to predefine the tf-tree currently to define the entity paths
   # See: https://github.com/rerun-io/rerun/issues/5242
-  tree: 
+  tree:
     map:
       ego_vehicle:
         ego_vehicle/depth_front: null
@@ -24,20 +24,18 @@ tf:
 topic_options:
   /carla/ego_vehicle/depth_front/image:
     max_depth: 100.0
-  /carla/ego_vehicle/rgb_front/image: 
+  /carla/ego_vehicle/rgb_front/image:
     entity_path: /map/ego_vehicle/ego_vehicle/rgb_front
-  /carla/ego_vehicle/rgb_front/camera_info: 
+  /carla/ego_vehicle/rgb_front/camera_info:
     entity_path: /map/ego_vehicle/ego_vehicle/rgb_front
-  /carla/ego_vehicle/rgb_left/image: 
+  /carla/ego_vehicle/rgb_left/image:
     entity_path: /map/ego_vehicle/ego_vehicle/rgb_left
-  /carla/ego_vehicle/rgb_left/camera_info: 
+  /carla/ego_vehicle/rgb_left/camera_info:
     entity_path: /map/ego_vehicle/ego_vehicle/rgb_left
-  /carla/ego_vehicle/rgb_right/image: 
+  /carla/ego_vehicle/rgb_right/image:
     entity_path: /map/ego_vehicle/ego_vehicle/rgb_right
-  /carla/ego_vehicle/rgb_right/camera_info: 
+  /carla/ego_vehicle/rgb_right/camera_info:
     entity_path: /map/ego_vehicle/ego_vehicle/rgb_right
 urdf:
-  # URDF support using Rerun 0.24.0+ native URDF loader
-  # Leave file_path empty if no URDF is available (e.g., for Carla simulation)
   file_path: ""
   entity_path: "odom"
