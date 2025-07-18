@@ -96,10 +96,10 @@ void log_imu(
         "timestamp",
         rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
     );
+
     rec.log(entity_path + "/x", rerun::Scalars(msg->linear_acceleration.x));
     rec.log(entity_path + "/y", rerun::Scalars(msg->linear_acceleration.y));
     rec.log(entity_path + "/z", rerun::Scalars(msg->linear_acceleration.z));
-
 }
 
 void log_image(
@@ -427,14 +427,7 @@ void log_joint_state(
         // Entity path format: /joint_angles/joint_name
         std::string joint_entity_path = entity_path + "/joint_angles/" + joint_name;
 
-        rec.log(
-            joint_entity_path,
-            rerun::Scalars(
-                rerun::Collection<rerun::components::Scalar>::take_ownership(
-                    {rerun::components::Scalar(joint_position)}
-                )
-            )
-        );
+        rec.log(joint_entity_path, rerun::Scalars(joint_position));
     }
 
     // Also log joint velocities if available
@@ -444,14 +437,7 @@ void log_joint_state(
             double joint_velocity = msg->velocity[i];
 
             std::string velocity_entity_path = entity_path + "/joint_velocities/" + joint_name;
-            rec.log(
-                velocity_entity_path,
-                rerun::Scalars(
-                    rerun::Collection<rerun::components::Scalar>::take_ownership(
-                        {rerun::components::Scalar(joint_velocity)}
-                    )
-                )
-            );
+            rec.log(velocity_entity_path, rerun::Scalars(joint_velocity));
         }
     }
 
@@ -462,14 +448,7 @@ void log_joint_state(
             double joint_effort = msg->effort[i];
 
             std::string effort_entity_path = entity_path + "/joint_efforts/" + joint_name;
-            rec.log(
-                effort_entity_path,
-                rerun::Scalars(
-                    rerun::Collection<rerun::components::Scalar>::take_ownership(
-                        {rerun::components::Scalar(joint_effort)}
-                    )
-                )
-            );
+            rec.log(effort_entity_path, rerun::Scalars(joint_effort));
         }
     }
 }
