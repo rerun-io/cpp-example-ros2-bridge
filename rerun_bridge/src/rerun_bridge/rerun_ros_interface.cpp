@@ -91,21 +91,21 @@ void log_imu(
     const rerun::RecordingStream& rec, const std::string& entity_path,
     const sensor_msgs::msg::Imu::ConstSharedPtr& msg
 ) {
-    rec.set_time_seconds(
+    rec.set_time_timestamp_secs_since_epoch(
         "timestamp",
         rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
     );
 
-    rec.log(entity_path + "/x", rerun::Scalar(msg->linear_acceleration.x));
-    rec.log(entity_path + "/y", rerun::Scalar(msg->linear_acceleration.y));
-    rec.log(entity_path + "/z", rerun::Scalar(msg->linear_acceleration.z));
+    rec.log(entity_path + "/x", rerun::Scalars(rerun::Collection<rerun::components::Scalar>::take_ownership({rerun::components::Scalar(msg->linear_acceleration.x)})));
+    rec.log(entity_path + "/y", rerun::Scalars(rerun::Collection<rerun::components::Scalar>::take_ownership({rerun::components::Scalar(msg->linear_acceleration.y)})));
+    rec.log(entity_path + "/z", rerun::Scalars(rerun::Collection<rerun::components::Scalar>::take_ownership({rerun::components::Scalar(msg->linear_acceleration.z)})));
 }
 
 void log_image(
     const rerun::RecordingStream& rec, const std::string& entity_path,
     const sensor_msgs::msg::Image::ConstSharedPtr& msg, const ImageOptions& options
 ) {
-    rec.set_time_seconds(
+    rec.set_time_timestamp_secs_since_epoch(
         "timestamp",
         rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
     );
@@ -143,7 +143,7 @@ void log_pose_stamped(
     const rerun::RecordingStream& rec, const std::string& entity_path,
     const geometry_msgs::msg::PoseStamped::ConstSharedPtr& msg
 ) {
-    rec.set_time_seconds(
+    rec.set_time_timestamp_secs_since_epoch(
         "timestamp",
         rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
     );
@@ -191,7 +191,7 @@ void log_tf_message(
             continue;
         }
 
-        rec.set_time_seconds(
+        rec.set_time_timestamp_secs_since_epoch(
             "timestamp",
             rclcpp::Time(transform.header.stamp.sec, transform.header.stamp.nanosec).seconds()
         );
@@ -219,7 +219,7 @@ void log_odometry(
     const rerun::RecordingStream& rec, const std::string& entity_path,
     const nav_msgs::msg::Odometry::ConstSharedPtr& msg
 ) {
-    rec.set_time_seconds(
+    rec.set_time_timestamp_secs_since_epoch(
         "timestamp",
         rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
     );
@@ -269,7 +269,7 @@ void log_transform(
     const rerun::RecordingStream& rec, const std::string& entity_path,
     const geometry_msgs::msg::TransformStamped::ConstSharedPtr& msg
 ) {
-    rec.set_time_seconds(
+    rec.set_time_timestamp_secs_since_epoch(
         "timestamp",
         rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
     );
@@ -296,7 +296,7 @@ void log_point_cloud2(
     const rerun::RecordingStream& rec, const std::string& entity_path,
     const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg, const PointCloud2Options& options
 ) {
-    rec.set_time_seconds(
+    rec.set_time_timestamp_secs_since_epoch(
         "timestamp",
         rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
     );
@@ -402,4 +402,44 @@ void log_point_cloud2(
     }
 
     rec.log(entity_path, rerun::Points3D(points).with_colors(colors));
+}
+
+void log_joint_state(
+    const rerun::RecordingStream& rec, const std::string& entity_path,
+    const sensor_msgs::msg::JointState::ConstSharedPtr& msg
+) {
+    // Log joint angles as time series scalars using the new Rerun 0.24.0 API
+    // This follows the pattern from the Rust and Python examples
+    for (size_t i = 0; i < msg->name.size() && i < msg->position.size(); ++i) {
+        const std::string& joint_name = msg->name[i];
+        double joint_position = msg->position[i];
+        
+        // Log each joint angle as a separate time series scalar
+        // Entity path format: /joint_angles/joint_name
+        std::string joint_entity_path = entity_path + "/joint_angles/" + joint_name;
+        
+        rec.log(joint_entity_path, rerun::Scalars(rerun::Collection<rerun::components::Scalar>::take_ownership({rerun::components::Scalar(joint_position)})));
+    }
+    
+    // Also log joint velocities if available
+    if (!msg->velocity.empty() && msg->velocity.size() == msg->name.size()) {
+        for (size_t i = 0; i < msg->name.size(); ++i) {
+            const std::string& joint_name = msg->name[i];
+            double joint_velocity = msg->velocity[i];
+            
+            std::string velocity_entity_path = entity_path + "/joint_velocities/" + joint_name;
+            rec.log(velocity_entity_path, rerun::Scalars(rerun::Collection<rerun::components::Scalar>::take_ownership({rerun::components::Scalar(joint_velocity)})));
+        }
+    }
+    
+    // Log joint efforts/torques if available
+    if (!msg->effort.empty() && msg->effort.size() == msg->name.size()) {
+        for (size_t i = 0; i < msg->name.size(); ++i) {
+            const std::string& joint_name = msg->name[i];
+            double joint_effort = msg->effort[i];
+            
+            std::string effort_entity_path = entity_path + "/joint_efforts/" + joint_name;
+            rec.log(effort_entity_path, rerun::Scalars(rerun::Collection<rerun::components::Scalar>::take_ownership({rerun::components::Scalar(joint_effort)})));
+        }
+    }
 }

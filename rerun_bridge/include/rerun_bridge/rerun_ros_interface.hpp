@@ -9,6 +9,7 @@
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <tf2_msgs/msg/tf_message.hpp>
 
@@ -65,4 +66,9 @@ struct PointCloud2Options {
 void log_point_cloud2(
     const rerun::RecordingStream& rec, const std::string& entity_path,
     const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg, const PointCloud2Options& options
+);
+
+void log_joint_state(
+    const rerun::RecordingStream& rec, const std::string& entity_path,
+    const sensor_msgs::msg::JointState::ConstSharedPtr& msg
 );

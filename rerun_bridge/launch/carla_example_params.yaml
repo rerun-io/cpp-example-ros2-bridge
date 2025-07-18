@@ -37,5 +37,7 @@ topic_options:
   /carla/ego_vehicle/rgb_right/camera_info: 
     entity_path: /map/ego_vehicle/ego_vehicle/rgb_right
 urdf:
+  # URDF support using Rerun 0.24.0+ native URDF loader
+  # Leave file_path empty if no URDF is available (e.g., for Carla simulation)
   file_path: ""
   entity_path: "odom"

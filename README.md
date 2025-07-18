@@ -8,7 +8,7 @@ It works by subscribing to all topics with supported types, converting the messa
 | --- | --- |
 | ![carla](https://github.com/rerun-io/cpp-example-ros2-bridge/assets/9785832/f4e91f4b-18b4-4890-b2cc-ff00880ca65c) | ![go2](https://github.com/rerun-io/cpp-example-ros2-bridge/assets/9785832/2856b5af-d02b-426b-8e23-2cf6f7c2bfd8) |
 
-This example is built for ROS 2. For more ROS examples, also check out the [ROS 2 example](https://www.rerun.io/docs/howto/ros2-nav-turtlebot), the [URDF data-loader](https://github.com/rerun-io/rerun-loader-python-example-urdf), and the [ROS 1 bridge](https://github.com/rerun-io/cpp-example-ros-bridge).
+This example is built for ROS 2. For more ROS examples, also check out the [ROS 2 example](https://www.rerun.io/docs/howto/ros2-nav-turtlebot) and the [ROS 1 bridge](https://github.com/rerun-io/cpp-example-ros-bridge). URDF support is now built into Rerun 0.24.0+ natively.
 
 > NOTE: Currently only some of the most common messages are supported (see https://github.com/rerun-io/cpp-example-ros2-bridge/issues/4 for an overview). However, extending to other messages should be straightforward.
 

@@ -242,11 +242,36 @@ void RerunLoggerNode::_read_yaml_config(std::string yaml_path) {
             if (urdf_file_path.size()) {
                 RCLCPP_INFO(
                     this->get_logger(),
-                    "Logging URDF from file path %s",
+                    "Logging URDF from file path %s using native Rerun 0.24.0+ URDF loader",
                     urdf_file_path.c_str()
                 );
-                _rec.log_file_from_path(urdf_file_path, urdf_entity_path, true);
+                try {
+                    // Log URDF file using Rerun 0.24.0+ native URDF support
+                    // The static=true parameter ensures the URDF is logged as a static resource
+                    _rec.log_file_from_path(urdf_file_path, urdf_entity_path, true);
+                    RCLCPP_INFO(
+                        this->get_logger(),
+                        "Successfully logged URDF file to entity path: %s", 
+                        urdf_entity_path.empty() ? "default" : urdf_entity_path.c_str()
+                    );
+                } catch (const std::exception& e) {
+                    RCLCPP_ERROR(
+                        this->get_logger(),
+                        "Failed to log URDF file: %s", 
+                        e.what()
+                    );
+                }
+            } else {
+                RCLCPP_WARN(
+                    this->get_logger(),
+                    "URDF file path resolved to empty string"
+                );
             }
+        } else {
+            RCLCPP_WARN(
+                this->get_logger(),
+                "URDF configuration found but no file_path specified"
+            );
         }
     }
 }
@@ -314,6 +339,9 @@ void RerunLoggerNode::_create_subscriptions() {
         } else if (topic_type == "sensor_msgs/msg/PointCloud2") {
             _topic_to_subscription[topic_name] =
                 _create_point_cloud2_subscription(topic_name, topic_options);
+        } else if (topic_type == "sensor_msgs/msg/JointState") {
+            _topic_to_subscription[topic_name] =
+                _create_joint_state_subscription(topic_name, topic_options);
         }
     }
 }
@@ -555,6 +583,40 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::PointCloud2>>
         ) {
             _handle_msg_header(restamp, lookup_transform, entity_path, msg->header);
             log_point_cloud2(_rec, entity_path, msg, point_cloud2_options);
+        },
+        subscription_options
+    );
+}
+
+std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::JointState>>
+    RerunLoggerNode::_create_joint_state_subscription(
+        const std::string& topic, const TopicOptions& topic_options
+    ) {
+    std::string entity_path = _resolve_entity_path(topic, topic_options);
+    bool lookup_transform = (topic_options.find("entity_path") == topic_options.end());
+    bool restamp = false;
+    if (topic_options.find("restamp") != topic_options.end()) {
+        restamp = topic_options.at("restamp").as<bool>();
+    }
+
+    rclcpp::SubscriptionOptions subscription_options;
+    subscription_options.callback_group = _parallel_callback_group;
+
+    RCLCPP_INFO(
+        this->get_logger(),
+        "Subscribing to JointState topic %s, logging to entity path %s",
+        topic.c_str(),
+        entity_path.c_str()
+    );
+
+    return this->create_subscription<sensor_msgs::msg::JointState>(
+        topic,
+        1000,
+        [&, entity_path, lookup_transform, restamp](
+            const sensor_msgs::msg::JointState::SharedPtr msg
+        ) {
+            _handle_msg_header(restamp, lookup_transform, entity_path, msg->header);
+            log_joint_state(_rec, entity_path, msg);
         },
         subscription_options
     );
