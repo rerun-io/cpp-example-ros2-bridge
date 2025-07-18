@@ -593,7 +593,7 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::JointState>>
         const std::string& topic, const TopicOptions& topic_options
     ) {
     std::string entity_path = _resolve_entity_path(topic, topic_options);
-    bool lookup_transform = (topic_options.find("entity_path") == topic_options.end());
+    bool lookup_transform = false; // Joint states don't need coordinate transformations
     bool restamp = false;
     if (topic_options.find("restamp") != topic_options.end()) {
         restamp = topic_options.at("restamp").as<bool>();

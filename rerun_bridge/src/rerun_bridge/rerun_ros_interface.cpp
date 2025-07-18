@@ -408,6 +408,14 @@ void log_joint_state(
     const rerun::RecordingStream& rec, const std::string& entity_path,
     const sensor_msgs::msg::JointState::ConstSharedPtr& msg
 ) {
+    // Set timestamp if available, otherwise skip timestamp logging to use current time
+    if (msg->header.stamp.sec != 0 || msg->header.stamp.nanosec != 0) {
+        rec.set_time_timestamp_secs_since_epoch(
+            "timestamp",
+            rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
+        );
+    }
+    
     // Log joint angles as time series scalars using the new Rerun 0.24.0 API
     // This follows the pattern from the Rust and Python examples
     for (size_t i = 0; i < msg->name.size() && i < msg->position.size(); ++i) {
