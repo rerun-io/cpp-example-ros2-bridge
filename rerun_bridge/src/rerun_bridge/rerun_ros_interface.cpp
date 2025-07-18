@@ -82,8 +82,7 @@ std::vector<rerun::Color> colormap(
         auto idx = static_cast<size_t>(
             255 * (value - min_value.value()) / (max_value.value() - min_value.value())
         );
-        colors.emplace_back(
-            rerun::Color(TurboBytes[idx][0], TurboBytes[idx][1], TurboBytes[idx][2])
+        colors.emplace_back(rerun::Color(TurboBytes[idx][0], TurboBytes[idx][1], TurboBytes[idx][2])
         );
     }
     return colors;
