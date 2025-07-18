@@ -106,7 +106,6 @@ depends_on = [
     "go2_ros2_sdk",
     "rosbag2_storage_mcap",
     "rerun_viewer",
-    "rerun_urdf_loader",
 ]
 cwd = "humble_ws"
 
@@ -114,8 +113,6 @@ cwd = "humble_ws"
 [tasks.rerun_viewer]
 cmd = "pip install rerun-sdk==0.24.0"
 
-[tasks.rerun_urdf_loader]
-cmd = "pip install git+https://github.com/rerun-io/rerun-loader-python-example-urdf.git"
 
 [dependencies]
 pip = ">=24.0,<25" # To install rerun-sdk and rerun-loader-python-example-urdf
