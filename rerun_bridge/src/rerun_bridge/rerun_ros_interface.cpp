@@ -417,38 +417,17 @@ void log_joint_state(
         );
     }
 
-    // Log joint angles as time series scalars using the new Rerun 0.24.0 API
-    // This follows the pattern from the Rust and Python examples
-    for (size_t i = 0; i < msg->name.size() && i < msg->position.size(); ++i) {
-        const std::string& joint_name = msg->name[i];
-        double joint_position = msg->position[i];
-
-        // Log each joint angle as a separate time series scalar
-        // Entity path format: /joint_angles/joint_name
-        std::string joint_entity_path = entity_path + "/joint_angles/" + joint_name;
-
-        rec.log(joint_entity_path, rerun::Scalars(joint_position));
-    }
-
-    // Also log joint velocities if available
-    if (!msg->velocity.empty() && msg->velocity.size() == msg->name.size()) {
-        for (size_t i = 0; i < msg->name.size(); ++i) {
-            const std::string& joint_name = msg->name[i];
-            double joint_velocity = msg->velocity[i];
-
-            std::string velocity_entity_path = entity_path + "/joint_velocities/" + joint_name;
-            rec.log(velocity_entity_path, rerun::Scalars(joint_velocity));
+    // Helper lambda to log joint data arrays
+    auto log_joint_array = [&](const std::vector<double>& values, const std::string& suffix) {
+        if (!values.empty() && values.size() == msg->name.size()) {
+            for (size_t i = 0; i < msg->name.size(); ++i) {
+                rec.log(entity_path + "/" + suffix + "/" + msg->name[i], rerun::Scalars(values[i]));
+            }
         }
-    }
+    };
 
-    // Log joint efforts/torques if available
-    if (!msg->effort.empty() && msg->effort.size() == msg->name.size()) {
-        for (size_t i = 0; i < msg->name.size(); ++i) {
-            const std::string& joint_name = msg->name[i];
-            double joint_effort = msg->effort[i];
-
-            std::string effort_entity_path = entity_path + "/joint_efforts/" + joint_name;
-            rec.log(effort_entity_path, rerun::Scalars(joint_effort));
-        }
-    }
+    // Log joint data using the helper lambda
+    log_joint_array(msg->position, "joint_positions");
+    log_joint_array(msg->velocity, "joint_velocities");
+    log_joint_array(msg->effort, "joint_efforts");
 }
