@@ -117,10 +117,10 @@ cmd = "pip install rerun-sdk==0.24.0"
 pip = ">=24.0,<25" # To install rerun-sdk
 
 # C++ build-tools:
-cmake = "3.27.6"
+cmake = "==3.27.6"
 clang-tools = ">=15,<16" # clang-format
 cxx-compiler = "1.6.0.*"
-ninja = "1.11.1"
+ninja = "==1.11.1"
 
 # ROS 2 build-tools:
 colcon-core = ">=0.16.0,<0.17"
