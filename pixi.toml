@@ -82,7 +82,7 @@ cwd = "humble_ws"
 # Go2 example:
 
 [tasks.go2_example_data]
-cmd = "curl -L -C - -O https://storage.googleapis.com/rerun-example-datasets/go2_ros2.zip && unzip go2_ros2.zip"
+cmd = "curl -L -C - -O https://storage.googleapis.com/rerun-example-datasets/go2_ros2.zip && unzip -n go2_ros2.zip"
 cwd = "humble_ws/install/rerun_bridge/share/rerun_bridge"
 outputs = ["humble_ws/install/rerun_bridge/share/rerun_bridge/go2_ros2"]
 depends-on = ["build"]
@@ -120,7 +120,7 @@ cmd = "pip install git+https://github.com/rerun-io/rerun-loader-python-example-u
 
 [dependencies]
 python = "3.11.*"
-numpy = "1.24.*" #1.26.x fails during go2_interface compile
+numpy = "1.26.*" #1.26.x fails during go2_interface compile
 pip = ">=24.0,<25" # To install rerun-sdk
 
 # C++ build-tools:
