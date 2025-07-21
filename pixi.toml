@@ -113,7 +113,11 @@ cwd = "humble_ws"
 [tasks.rerun_viewer]
 cmd = "pip install rerun-sdk==0.24.0"
 
+
+
 [dependencies]
+python = "3.11.*"
+numpy = "1.26.*"
 pip = ">=24.0,<25" # To install rerun-sdk
 
 # C++ build-tools:
