@@ -62,6 +62,7 @@ cmd = """
 && colcon build --packages-select mcap_vendor rosbag2_storage_mcap_testdata rosbag2_storage_mcap --cmake-args -DCMAKE_BUILD_TYPE=Release
 """
 depends_on = ["ws"]
+outputs = ["humble_ws/install/mcap_vendor", "humble_ws/install/rosbag2_storage_mcap"]
 cwd = "humble_ws"
 
 # ------------------------------------------------------------------------------------------
@@ -95,6 +96,8 @@ cmd = """
 (test -d src/go2_ros2_sdk || git clone --recurse-submodules https://github.com/abizovnuralem/go2_ros2_sdk.git src/go2_ros2_sdk)
 && colcon build --packages-select unitree_go go2_interfaces go2_robot_sdk --cmake-args -DCMAKE_BUILD_TYPE=Release
 """
+# Only track go2_interfaces output to prevent rebuilds that cause numpy header compilation errors
+outputs = ["humble_ws/install/go2_interfaces"]
 cwd = "humble_ws"
 depends_on = ["ws"]
 
