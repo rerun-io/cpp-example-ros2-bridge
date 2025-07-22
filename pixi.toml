@@ -50,7 +50,7 @@ cwd = "."
 
 [tasks.build]
 cmd = "colcon build --packages-select rerun_bridge --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
-depends_on = ["ws"]
+depends-on = ["ws"]
 cwd = "humble_ws"
 
 # Get mcap support from source since its not available in robostack channel
@@ -61,7 +61,9 @@ cmd = """
 (test -d src/rosbag2_storage_mcap || git clone https://github.com/ros-tooling/rosbag2_storage_mcap.git src/rosbag2_storage_mcap)
 && colcon build --packages-select mcap_vendor rosbag2_storage_mcap_testdata rosbag2_storage_mcap --cmake-args -DCMAKE_BUILD_TYPE=Release
 """
-depends_on = ["ws"]
+
+outputs = ["humble_ws/install/mcap_vendor", "humble_ws/install/rosbag2_storage_mcap"]
+depends-on = ["ws"]
 cwd = "humble_ws"
 
 # ------------------------------------------------------------------------------------------
@@ -71,21 +73,21 @@ cwd = "humble_ws"
 cmd = "curl -L -C - -O https://storage.googleapis.com/rerun-example-datasets/carla_ros2.zip && unzip carla_ros2.zip"
 cwd = "humble_ws/install/rerun_bridge/share/rerun_bridge"
 outputs = ["humble_ws/install/rerun_bridge/share/rerun_bridge/carla_ros2"]
-depends_on = ["build"]
+depends-on = ["build"]
 
 [tasks.carla_example]
 cmd = "bash -c 'source ./install/local_setup.bash && ros2 launch rerun_bridge carla_example.launch'"
-depends_on = ["build", "rerun_viewer", "carla_example_data"]
+depends-on = ["build", "rerun_viewer", "carla_example_data"]
 cwd = "humble_ws"
 
 # ------------------------------------------------------------------------------------------
 # Go2 example:
 
 [tasks.go2_example_data]
-cmd = "curl -L -C - -O https://storage.googleapis.com/rerun-example-datasets/go2_ros2.zip && unzip go2_ros2.zip"
+cmd = "curl -L -C - -O https://storage.googleapis.com/rerun-example-datasets/go2_ros2.zip && unzip -n go2_ros2.zip"
 cwd = "humble_ws/install/rerun_bridge/share/rerun_bridge"
 outputs = ["humble_ws/install/rerun_bridge/share/rerun_bridge/go2_ros2"]
-depends_on = ["build"]
+depends-on = ["build"]
 
 # Get the go2_ros2_sdk package
 #
@@ -95,12 +97,14 @@ cmd = """
 (test -d src/go2_ros2_sdk || git clone --recurse-submodules https://github.com/abizovnuralem/go2_ros2_sdk.git src/go2_ros2_sdk)
 && colcon build --packages-select unitree_go go2_interfaces go2_robot_sdk --cmake-args -DCMAKE_BUILD_TYPE=Release
 """
+# Only track go2_interfaces output to prevent rebuilds that cause numpy header compilation errors
+outputs = ["humble_ws/install/go2_interfaces"]
 cwd = "humble_ws"
-depends_on = ["ws"]
+depends-on = ["ws"]
 
 [tasks.go2_example]
 cmd = "bash -c 'source ./install/local_setup.bash && ros2 launch rerun_bridge go2_example.launch'"
-depends_on = [
+depends-on = [
     "build",
     "go2_example_data",
     "go2_ros2_sdk",
@@ -110,21 +114,24 @@ depends_on = [
 ]
 cwd = "humble_ws"
 
-# Install Rerun and URDF loader manually via pip3, this should be replaced with direct pypi dependencies in the future.
+# Install Rerun 0.24.0 with native URDF support
 [tasks.rerun_viewer]
-cmd = "pip install rerun-sdk==0.23.4"
+cmd = "pip install rerun-sdk==0.24.0"
+
 
 [tasks.rerun_urdf_loader]
 cmd = "pip install git+https://github.com/rerun-io/rerun-loader-python-example-urdf.git"
 
 [dependencies]
-pip = ">=24.0,<25" # To install rerun-sdk and rerun-loader-python-example-urdf
+python = "3.11.*"
+numpy = "1.26.*" #1.26.x fails during go2_interface compile
+pip = ">=24.0,<25" # To install rerun-sdk
 
 # C++ build-tools:
-cmake = "3.27.6"
+cmake = "==3.27.6"
 clang-tools = ">=15,<16" # clang-format
 cxx-compiler = "1.6.0.*"
-ninja = "1.11.1"
+ninja = "==1.11.1"
 
 # ROS 2 build-tools:
 colcon-core = ">=0.16.0,<0.17"

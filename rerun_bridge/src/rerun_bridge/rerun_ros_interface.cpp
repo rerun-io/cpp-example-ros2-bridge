@@ -91,21 +91,21 @@ void log_imu(
     const rerun::RecordingStream& rec, const std::string& entity_path,
     const sensor_msgs::msg::Imu::ConstSharedPtr& msg
 ) {
-    rec.set_time_seconds(
+    rec.set_time_timestamp_secs_since_epoch(
         "timestamp",
         rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
     );
 
-    rec.log(entity_path + "/x", rerun::Scalar(msg->linear_acceleration.x));
-    rec.log(entity_path + "/y", rerun::Scalar(msg->linear_acceleration.y));
-    rec.log(entity_path + "/z", rerun::Scalar(msg->linear_acceleration.z));
+    rec.log(entity_path + "/x", rerun::Scalars(msg->linear_acceleration.x));
+    rec.log(entity_path + "/y", rerun::Scalars(msg->linear_acceleration.y));
+    rec.log(entity_path + "/z", rerun::Scalars(msg->linear_acceleration.z));
 }
 
 void log_image(
     const rerun::RecordingStream& rec, const std::string& entity_path,
     const sensor_msgs::msg::Image::ConstSharedPtr& msg, const ImageOptions& options
 ) {
-    rec.set_time_seconds(
+    rec.set_time_timestamp_secs_since_epoch(
         "timestamp",
         rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
     );
@@ -143,7 +143,7 @@ void log_pose_stamped(
     const rerun::RecordingStream& rec, const std::string& entity_path,
     const geometry_msgs::msg::PoseStamped::ConstSharedPtr& msg
 ) {
-    rec.set_time_seconds(
+    rec.set_time_timestamp_secs_since_epoch(
         "timestamp",
         rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
     );
@@ -191,7 +191,7 @@ void log_tf_message(
             continue;
         }
 
-        rec.set_time_seconds(
+        rec.set_time_timestamp_secs_since_epoch(
             "timestamp",
             rclcpp::Time(transform.header.stamp.sec, transform.header.stamp.nanosec).seconds()
         );
@@ -219,7 +219,7 @@ void log_odometry(
     const rerun::RecordingStream& rec, const std::string& entity_path,
     const nav_msgs::msg::Odometry::ConstSharedPtr& msg
 ) {
-    rec.set_time_seconds(
+    rec.set_time_timestamp_secs_since_epoch(
         "timestamp",
         rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
     );
@@ -269,7 +269,7 @@ void log_transform(
     const rerun::RecordingStream& rec, const std::string& entity_path,
     const geometry_msgs::msg::TransformStamped::ConstSharedPtr& msg
 ) {
-    rec.set_time_seconds(
+    rec.set_time_timestamp_secs_since_epoch(
         "timestamp",
         rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
     );
@@ -296,7 +296,7 @@ void log_point_cloud2(
     const rerun::RecordingStream& rec, const std::string& entity_path,
     const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg, const PointCloud2Options& options
 ) {
-    rec.set_time_seconds(
+    rec.set_time_timestamp_secs_since_epoch(
         "timestamp",
         rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
     );
@@ -402,4 +402,31 @@ void log_point_cloud2(
     }
 
     rec.log(entity_path, rerun::Points3D(points).with_colors(colors));
+}
+
+void log_joint_state(
+    const rerun::RecordingStream& rec, const std::string& entity_path,
+    const sensor_msgs::msg::JointState::ConstSharedPtr& msg
+) {
+    // Set timestamp if available, otherwise skip timestamp logging to use current time
+    if (msg->header.stamp.sec != 0 || msg->header.stamp.nanosec != 0) {
+        rec.set_time_timestamp_secs_since_epoch(
+            "timestamp",
+            rclcpp::Time(msg->header.stamp.sec, msg->header.stamp.nanosec).seconds()
+        );
+    }
+
+    // Helper lambda to log joint data arrays
+    auto log_joint_array = [&](const std::vector<double>& values, const std::string& suffix) {
+        if (!values.empty() && values.size() == msg->name.size()) {
+            for (size_t i = 0; i < msg->name.size(); ++i) {
+                rec.log(entity_path + "/" + suffix + "/" + msg->name[i], rerun::Scalars(values[i]));
+            }
+        }
+    };
+
+    // Log joint data using the helper lambda
+    log_joint_array(msg->position, "joint_positions");
+    log_joint_array(msg->velocity, "joint_velocities");
+    log_joint_array(msg->effort, "joint_efforts");
 }

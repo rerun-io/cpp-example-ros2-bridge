@@ -13,6 +13,7 @@
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <tf2_msgs/msg/tf_message.hpp>
 
@@ -85,6 +86,10 @@ class RerunLoggerNode : public rclcpp::Node {
         );
     std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::PointCloud2>>
         _create_point_cloud2_subscription(
+            const std::string& topic, const TopicOptions& topic_options
+        );
+    std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::JointState>>
+        _create_joint_state_subscription(
             const std::string& topic, const TopicOptions& topic_options
         );
 };

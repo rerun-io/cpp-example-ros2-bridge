@@ -314,6 +314,9 @@ void RerunLoggerNode::_create_subscriptions() {
         } else if (topic_type == "sensor_msgs/msg/PointCloud2") {
             _topic_to_subscription[topic_name] =
                 _create_point_cloud2_subscription(topic_name, topic_options);
+        } else if (topic_type == "sensor_msgs/msg/JointState") {
+            _topic_to_subscription[topic_name] =
+                _create_joint_state_subscription(topic_name, topic_options);
         }
     }
 }
@@ -555,6 +558,40 @@ std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::PointCloud2>>
         ) {
             _handle_msg_header(restamp, lookup_transform, entity_path, msg->header);
             log_point_cloud2(_rec, entity_path, msg, point_cloud2_options);
+        },
+        subscription_options
+    );
+}
+
+std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::JointState>>
+    RerunLoggerNode::_create_joint_state_subscription(
+        const std::string& topic, const TopicOptions& topic_options
+    ) {
+    std::string entity_path = _resolve_entity_path(topic, topic_options);
+    bool lookup_transform = false; // Joint states don't need coordinate transformations
+    bool restamp = false;
+    if (topic_options.find("restamp") != topic_options.end()) {
+        restamp = topic_options.at("restamp").as<bool>();
+    }
+
+    rclcpp::SubscriptionOptions subscription_options;
+    subscription_options.callback_group = _parallel_callback_group;
+
+    RCLCPP_INFO(
+        this->get_logger(),
+        "Subscribing to JointState topic %s, logging to entity path %s",
+        topic.c_str(),
+        entity_path.c_str()
+    );
+
+    return this->create_subscription<sensor_msgs::msg::JointState>(
+        topic,
+        1000,
+        [&, entity_path, lookup_transform, restamp](
+            const sensor_msgs::msg::JointState::SharedPtr msg
+        ) {
+            _handle_msg_header(restamp, lookup_transform, entity_path, msg->header);
+            log_joint_state(_rec, entity_path, msg);
         },
         subscription_options
     );
