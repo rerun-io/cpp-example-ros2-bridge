@@ -12,7 +12,7 @@ jobs:
 
       - uses: prefix-dev/setup-pixi@v0.8.1
         with:
-          pixi-version: v0.26.1
+          pixi-version: v0.49.0
           cache: true
 
       - run: pixi run cpp-fmt-check
