@@ -1,6 +1,6 @@
 # C++ Example: ROS 2 Bridge
 
-This is an example that shows how to use Rerun's C++ API to log and visualize [ROS 2](https://docs.ros.org/en/humble/index.html) messages (for the ROS 1 version, see [here](https://github.com/rerun-io/cpp-example-ros-bridge)). 
+This is an example that shows how to use Rerun's C++ API to log and visualize [ROS 2](https://docs.ros.org/en/humble/index.html) messages (for the ROS 1 version, see [here](https://github.com/rerun-io/cpp-example-ros-bridge)).
 
 It works by subscribing to all topics with supported types, converting the messages, and logging the data to Rerun. It further allows to remap topic names to specific entity paths, specify additional timeless transforms, and pinhole parameters via an external config file. See the [launch](https://github.com/rerun-io/cpp-example-ros2-bridge/tree/main/rerun_bridge/launch) directory for usage examples.
 
@@ -13,7 +13,7 @@ This example is built for ROS 2. For more ROS examples, also check out the [ROS 
 > NOTE: Currently only some of the most common messages are supported (see https://github.com/rerun-io/cpp-example-ros2-bridge/issues/4 for an overview). However, extending to other messages should be straightforward.
 
 ## Compile and run using pixi
-The easiest way to get started is to install [pixi](https://prefix.dev/docs/pixi/overview).
+The easiest way to get started is to install [pixi](https://pixi.sh/latest/installation/).
 
 The pixi environment described in `pixi.toml` contains all required dependencies, including the example data, and the Rerun viewer. To run the [CARLA](https://carla.org/) example use
 ```shell
