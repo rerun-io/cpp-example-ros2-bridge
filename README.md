@@ -1,5 +1,5 @@
 > [!WARNING]
-> This repository is archived.
+> This repository is deprecated.
 >
 > Please see here for the latest ROS-related documentation:
 > * [Use Rerun with ROS 2](https://rerun.io/docs/howto/integrations/ros2-nav-turtlebot)
