@@ -1,3 +1,13 @@
+> [!WARNING]
+> This repository is deprecated.
+>
+> Please see here for the latest ROS-related documentation:
+> * [Use Rerun with ROS 2](https://rerun.io/docs/howto/integrations/ros2-nav-turtlebot)
+> * [Loading URDF models](https://rerun.io/docs/howto/logging-and-ingestion/urdf)
+> * [Working with MCAP](https://rerun.io/docs/howto/logging-and-ingestion/mcap)
+>
+> Feel free to join also our [Discord](https://discord.gg/PXtCgFBSmH) to discuss any questions.
+
 # C++ Example: ROS 2 Bridge
 
 This is an example that shows how to use Rerun's C++ API to log and visualize [ROS 2](https://docs.ros.org/en/humble/index.html) messages (for the ROS 1 version, see [here](https://github.com/rerun-io/cpp-example-ros-bridge)).
